@@ -15,6 +15,7 @@ It was distilled from several production repositories (web + BaaS, React Native,
 - **Terse output.** `caveman` output style: ≤ 15 lines, result first, nothing important dropped.
 - **Early, lossless compaction.** Compaction at 200k tokens instead of near a 1M window; a `PreCompact` hook tells the summary to keep the active state; a `SessionStart` hook re-injects branch, commits and handoff after compaction; a statusline shows context use.
 - **Evidence over claims.** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified; human approval gate before writes.
+- **Device lab in CI.** No Mac or spare phones? Workflow templates build and test on hosted emulators/simulators, package APK/TestFlight builds, publish Expo OTA and run Maestro — with a safe secret list and public-repo hardening.
 - **Security & performance skills** anchored on OWASP Top 10:2025, ASVS 5.0, MASVS v2.1, NIST SP 800-63-4, SSDF, SLSA, Core Web Vitals, Android vitals and Apple hang metrics.
 
 ## Install
@@ -47,6 +48,7 @@ Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
 | `skills/handoff` | session state file |
 | `skills/security-core` · `identity-session` · `data-privacy` · `supply-chain` | security modules |
 | `skills/performance-core` · `platform-security` | performance and per-platform (native, web, hybrid WebView, desktop web runtime) |
+| `skills/ci-device-lab` | device lab in GitHub Actions: Android emulator, iOS simulator, APK/TestFlight builds, Expo OTA and EAS (cloud or local), Maestro E2E, private-source + public-CI pattern, secret list and hardening |
 | `output-styles/caveman.md` | terse output style |
 | `hooks/hooks.json` | plugin hooks (SessionStart, PreCompact) |
 
