@@ -103,10 +103,11 @@ def main(argv):
         if k == "hooks":
             hooks = cur.setdefault("hooks", {})
             for event, entries in v.items():
-                existing = json.dumps(hooks.get(event, []))
                 for e in entries:
-                    if json.dumps(e["hooks"]) not in existing and ".claude/agent-kit/" not in existing:
-                        hooks.setdefault(event, []).append(e)
+                    existing = json.dumps(hooks.get(event, []))
+                    missing = [h for h in e["hooks"] if h["command"].split("/")[-1] not in existing]
+                    if missing:
+                        hooks.setdefault(event, []).append({**e, "hooks": missing})
                         changed = True
         elif k == "env":
             env = cur.setdefault("env", {})

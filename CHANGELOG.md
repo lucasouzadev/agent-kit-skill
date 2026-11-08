@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 — 2026-11-08
+- `intent-compiler` skill: the owner's plain message is compiled, invisibly, into a brief (goal, repo context, acceptance, constraints, mode, skills, ≤ 1 question) before acting; rubric with examples.
+- `intent-brief` UserPromptSubmit hook: one-line reminder with a likely mode; silent for approvals, short acks and slash commands; never echoes the owner's text.
+- Installer merges each hook command individually (a new hook on an existing event is no longer skipped).
+
 ## 1.3.0 — 2026-11-08
 - `session-guide` skill + `standard/CONVERSATION.md`: the agent leads sessions from plain talk (briefing, goal + acceptance restatement, one question at a time, agenda, parking lot).
 - `baton-pass` skill: self-contained continuation prompt for any IDE/model/platform; never includes secrets or the canary.

@@ -11,7 +11,7 @@ It was distilled from several production repositories (web + BaaS, React Native,
 
 ## What you get
 - **Short core, modules on demand.** `AGENTS.md` (≤ 120 lines) is the only always-loaded file; the rest is a doc or a skill opened by task.
-- **Meeting-style sessions.** The owner talks, the agent leads (`session-guide`): it boots from `AGENTS.md` + the handoff, briefs where things stopped, restates each request as goal + acceptance, and asks one question at a time. No prompt writing.
+- **Meeting-style sessions.** The owner talks, the agent leads (`session-guide`): it boots from `AGENTS.md` + the handoff, briefs where things stopped, restates each request as goal + acceptance, and asks one question at a time. No prompt writing: every message is silently compiled into an effective brief (`intent-compiler`) — goal, context pulled from the repo, acceptance, constraints, mode, skills — that only the agent reads.
 - **Pass the baton.** The statusline shows weekly/5-hour plan usage; near the limit a hook makes the agent offer a self-contained continuation prompt (`baton-pass`) you can paste into any other IDE, model or platform.
 - **Terse output.** `caveman` output style: ≤ 15 lines, result first, nothing important dropped.
 - **Early, lossless compaction.** Compaction at 200k tokens instead of near a 1M window; a `PreCompact` hook tells the summary to keep the active state; a `SessionStart` hook re-injects branch, commits and handoff after compaction; a statusline shows context use.
@@ -48,6 +48,7 @@ Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
 | `skills/ux-check` | UX laws, states, a11y, responsiveness, UI performance |
 | `skills/handoff` | session state file |
 | `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time, agenda |
+| `skills/intent-compiler` | invisible talk → brief conversion before acting (rubric + examples) |
 | `skills/baton-pass` | continuation prompt for another tool/session when limits are near |
 | `skills/security-core` · `identity-session` · `data-privacy` · `supply-chain` | security modules |
 | `skills/performance-core` · `platform-security` | performance and per-platform (native, web, hybrid WebView, desktop web runtime) |

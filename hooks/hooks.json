@@ -54,6 +54,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/intent-brief.sh"
+          },
+          {
+            "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/usage-guard.sh"
           }
         ]
