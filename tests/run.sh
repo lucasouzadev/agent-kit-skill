@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; KIT="$ROOT/skills/agent-kit"
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 pass() { echo "PASS $*"; }; fail() { echo "FAIL $*"; exit 1; }
+# hooks log in the background: wait (up to 10 s) for an event instead of a fixed sleep
+waitfor() { for _ in $(seq 1 100); do grep -rqs -- "$1" "$T/state" 2>/dev/null && return 0; sleep 0.1; done; return 1; }
 
 for f in "$KIT"/assets/claude/*.sh "$ROOT"/skills/ci-device-lab/templates/scripts/*.sh "$ROOT"/skills/ci-device-lab/templates/maestro/run.sh; do bash -n "$f" || fail "bash syntax $f"; done; pass "bash syntax"
 python3 -m py_compile "$KIT"/scripts/install.py "$KIT"/assets/claude/*.py || fail "python syntax"; pass "python syntax"
@@ -46,7 +48,7 @@ echo '{"session_id":"s","prompt":"x y z w"}' | bash "$A/usage-guard.sh" | grep -
 [ -z "$(echo '{"session_id":"s","prompt":"x y z w"}' | bash "$A/usage-guard.sh")" ] || fail "usage-guard should offer once"
 out="$(echo '{"session_id":"s","trigger":"auto"}' | bash "$A/precompact.sh")"; [[ "$out" == *"ACTIVE STATE"* ]] || fail "precompact"
 out="$(echo '{"session_id":"s"}' | bash "$A/session-context.sh" startup)"; [[ "$out" == *"session startup"* ]] || fail "session-context"
-sleep 1; out="$(python3 "$A/metrics.py" report)"; [[ "$out" == *"compactions: 1"* ]] || { echo "$out"; fail "metrics report"; }
+waitfor '"event": "precompact"' || fail "metrics event not logged"; out="$(python3 "$A/metrics.py" report)"; [[ "$out" == *"compactions: 1"* ]] || { echo "$out"; fail "metrics report"; }
 grep -rq "quebrou" "$T/state" && fail "metrics stored prompt text"
 pass "hooks + metrics (no prompt text stored)"
 python3 "$A/verify.py" "$P" || fail "verify clean"; echo "#x" >> "$A/precompact.sh"
@@ -65,7 +67,7 @@ chk "git commit -m 'docs: git push origin main, eas build'" silent
 echo 'eas build .*simulator' > "$A/guard-allow"; chk 'eas build --profile github-simulator' silent; chk 'eas build --profile production' ask; rm "$A/guard-allow"
 echo 'ask|terraform plan -destroy|project rule' > "$A/guard-extra"; chk 'terraform plan -destroy' ask; rm "$A/guard-extra"
 [ "$(echo '{"tool_name":"Read","tool_input":{}}' | bash "$A/action-guard.sh")" = "" ] || fail "guard must ignore other tools"
-sleep 1; cat "$T/state"/*.jsonl | grep -q '"event": "guard"' || fail "guard not logged"
+waitfor '"event": "guard"' || fail "guard not logged"
 grep -rq "rm -rf" "$T/state" && fail "guard logged a command"
 AGENT_KIT_GUARD=0; export AGENT_KIT_GUARD; chk 'git push origin main' silent; unset AGENT_KIT_GUARD
 pass "action guard (decisions, allow/extra files, no command text logged)"
@@ -157,7 +159,7 @@ if command -v actionlint >/dev/null 2>&1; then actionlint -color=false "$ROOT"/s
 S="$ROOT/skills/ci-device-lab/templates/scripts"; head -c 50000 /dev/urandom > "$T/b"
 export ARTIFACT_PASSPHRASE=0123456789abcdefghijklmnopqrstuv
 node "$S/encrypt-artifact.mjs" "$T/b" "$T/b.enc" >/dev/null && node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.out" >/dev/null && cmp -s "$T/b" "$T/b.out" || fail "encryption round-trip"
-printf 'X' | dd of="$T/b.enc" bs=1 seek=60 conv=notrunc 2>/dev/null
+python3 -c "import sys; p=sys.argv[1]; b=bytearray(open(p,'rb').read()); b[60]^=0xFF; open(p,'wb').write(b)" "$T/b.enc"
 node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.bad" >/dev/null 2>&1 && fail "tamper not detected"; pass "encryption"
 
 # personal-data guard: no e-mails or home paths in shipped files
