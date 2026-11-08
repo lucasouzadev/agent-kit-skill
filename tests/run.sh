@@ -133,6 +133,8 @@ $PQ --body-file "$T/good.md" --config "$Q/pr-quality.json" --summary-file /dev/n
 sed 's#| PASS | `bun run.*#| PASS | |#' "$T/good.md" > "$T/b1.md"; [[ "$(pqo --body-file "$T/b1.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"PASS without evidence"* ]] || fail "PASS without evidence not caught"
 sed 's#BLOCKED: no physical device in this session#BLOCKED#' "$T/good.md" > "$T/b2.md"; [[ "$(pqo --body-file "$T/b2.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"needs a reason"* ]] || fail "reason not required"
 sed 's#\*\*Delivery:\*\* OTA#**Delivery:** OTA / build / server / N/A#' "$T/good.md" > "$T/b3.md"; [[ "$(pqo --body-file "$T/b3.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"whole legend"* ]] || fail "legend not caught"
+sed 's#\*\*Delivery:\*\* OTA#**Delivery:** OTA / build / server / build + OTA / N/A#' "$T/good.md" > "$T/b4.md"; [[ "$(pqo --body-file "$T/b4.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"whole legend"* ]] || fail "legend with + not caught"
+sed 's#\*\*Delivery:\*\* OTA#**Delivery:** build + OTA#' "$T/good.md" > "$T/b5.md"; [[ "$(pqo --body-file "$T/b5.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" != *"❌"* ]] || fail "'build + OTA' is a valid answer"
 $PQ --body-file "$Q/PULL_REQUEST_TEMPLATE.md" --config "$Q/pr-quality.json" --summary-file /dev/null >/dev/null 2>&1 && fail "unfilled template accepted"
 $PQ --body-file "$Q/PULL_REQUEST_TEMPLATE.ci.md" --config "$Q/pr-quality.ci.json" --summary-file /dev/null >/dev/null 2>&1 && fail "unfilled CI template accepted"
 echo '[{"filename":"src/a.ts","additions":1,"deletions":0,"patch":"+const k = \"AKIAABCDEFGHIJKLMNOP\";\n"}]' > "$T/f1.json"

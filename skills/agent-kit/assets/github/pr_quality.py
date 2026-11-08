@@ -102,8 +102,10 @@ def evaluate(body, files, cfg, draft=False, author=""):
     for h, text in secs:
         if not any(re.search(a, h, re.I) for a in cfg["evidence_sections"]):
             continue
-        for line in text.splitlines():
-            if "|" not in line or re.match(r"^\s*\|?[\s:\-|]+\|?\s*$", line):
+        tl = text.splitlines()
+        sep = lambda l: bool(re.match(r"^\s*\|?[\s:\-|]+\|?\s*$", l)) and "-" in l
+        for idx, line in enumerate(tl):
+            if "|" not in line or sep(line) or (idx + 1 < len(tl) and sep(tl[idx + 1]) and "|" in tl[idx + 1]):
                 continue
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
             if len(cells) < 2:
@@ -136,7 +138,7 @@ def evaluate(body, files, cfg, draft=False, author=""):
         else:
             tail = line.split(":", 1)[1]
             found = [o for o in d["options"] if re.search(r"(?<![\w])" + re.escape(o) + r"(?![\w])", tail, re.I)]
-            if len(found) > 1 and "+" not in tail:
+            if len(found) > 1 and re.search(r"\s/\s", tail):
                 fails.append("delivery channel left as the whole legend: keep only the one that applies")
     # files
     adds = {f["filename"]: [l[1:] for l in (f.get("patch") or "").splitlines() if l.startswith("+") and not l.startswith("+++")] for f in files}
