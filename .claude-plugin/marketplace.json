@@ -1,0 +1,8 @@
+{
+  "name": "agent-kit",
+  "description": "Agent Kit — portable documentation and workflow standard for AI coding agents.",
+  "owner": { "name": "agent-kit contributors" },
+  "plugins": [
+    { "name": "agent-kit", "source": "./", "description": "Short AGENTS.md core, on-demand rules and skills, terse output, early compaction with handoff re-injection, security & performance skills." }
+  ]
+}
