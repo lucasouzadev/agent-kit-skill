@@ -62,6 +62,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/action-guard.sh"
+          }
+        ]
+      }
     ]
   }
 }

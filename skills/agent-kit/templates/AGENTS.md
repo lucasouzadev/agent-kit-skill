@@ -66,3 +66,7 @@ Packet → QUALITY-G1 (surface + risk + tests designed first) → owner approval
 ## 6. Authority order
 
 Explicit current owner instruction > this file > recorded decisions (ADR/OWNER_DECISIONS) > accepted spec > plan > `standard/` docs > existing code patterns. Status files report progress; they never redefine the product. On conflict, report it before working around it.
+
+## 7. Tools without hooks (Codex, Cursor, others)
+
+Hooks, output style and statusline exist only in Claude Code. In other tools do their duties by hand: `docs/agents/standard/NO-HOOKS.md` (session briefing, brief compilation, asking before risky actions, handoff before the context fills, baton).

@@ -30,6 +30,9 @@ Principle: a short core loaded every session, everything else opened by task. Th
 | `.claude/skills/`, `.claude/output-styles/` | vendored copies (skip with `--no-vendor`) |
 
 ## Options
+- `--profile lite|standard|full`: how many kit skills to vendor (7 / 15 / all). Recommend **lite** to newcomers and small projects, **standard** for apps with real users, **full** when the project builds in CI. Remembered in `.claude/agent-kit/profile`.
+- `--cursor`: write `.cursor/rules/agent-kit.mdc` (automatic when `.cursor/` exists). Tools without hooks follow `docs/agents/standard/NO-HOOKS.md`.
+- `guard-allow` / `guard-extra` in `.claude/agent-kit/`: standing authorizations (e.g. `eas build .*simulator`) and project-specific risky commands for the `action-guard` hook.
 - `--with-guard`: CI workflow that fails PRs changing kit hooks outside the installer; add CODEOWNERS for `.claude/`. Skip it on private repos without Actions minutes.
 - `.claude/agent-kit/overrides`: `NAME.md=path` per line when the project has its own version of a standard doc (one source of truth).
 - `.claude/agent-kit/skip-skills`: kit skills the project replaces with its own.

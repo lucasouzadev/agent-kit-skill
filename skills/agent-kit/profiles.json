@@ -1,0 +1,7 @@
+{
+  "lite": ["caveman", "session-guide", "intent-compiler", "handoff", "baton-pass", "systematic-debug", "security-core"],
+  "standard": ["caveman", "session-guide", "intent-compiler", "handoff", "baton-pass", "systematic-debug", "security-core",
+               "session-preflight", "fundamentals-audit", "ux-check", "identity-session", "data-privacy", "supply-chain",
+               "performance-core", "platform-security"],
+  "full": "*"
+}

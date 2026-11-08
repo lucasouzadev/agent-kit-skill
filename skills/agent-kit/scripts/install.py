@@ -2,7 +2,8 @@
 """agent-kit installer (stdlib only).
 
 Usage:
-  python3 install.py <target-repo> [--public-ci] [--no-vendor] [--with-guard] [--dry-run]
+  python3 install.py <target-repo> [--public-ci] [--no-vendor] [--profile lite|standard|full]
+                             [--with-guard] [--cursor] [--dry-run]
 
 What it does
   * docs/agents/standard/          kit-owned docs, always refreshed
@@ -11,6 +12,9 @@ What it does
   * .claude/output-styles/caveman.md and .claude/skills/<kit skills>/   (unless --no-vendor)
   * AGENTS.md, CLAUDE.md, docs/agents/OWNER_DECISIONS.md   created only if missing
 
+--profile: which skills to vendor (lite 7 · standard 15 · full 17+; default full or the last choice, kept in
+.claude/agent-kit/profile). Skills already installed are never removed, only reported.
+--cursor: also write .cursor/rules/agent-kit.mdc (automatic when .cursor/ exists).
 --with-guard: adds .github/workflows/agent-kit-guard.yml (fails PRs that change kit hooks
 without re-running the installer) and suggests a CODEOWNERS entry for .claude/.
 
@@ -48,6 +52,15 @@ def main(argv):
     public = "--public-ci" in argv
     vendor = "--no-vendor" not in argv
     guard = "--with-guard" in argv
+    cursor = "--cursor" in argv or (target / ".cursor").is_dir()
+    profile = next((argv[i + 1] for i, a in enumerate(argv) if a == "--profile" and i + 1 < len(argv)), None)
+    pf = target / ".claude/agent-kit/profile"
+    profile = profile or (pf.read_text().strip() if pf.exists() else "full")
+    profiles = json.loads((SKILL_DIR / "profiles.json").read_text())
+    if profile not in profiles:
+        print(f"unknown profile {profile!r}; choose {', '.join(profiles)}")
+        return 2
+    chosen = profiles[profile]
     dry = "--dry-run" in argv
     manifest_path = target / ".claude/agent-kit/manifest.json"
     old = json.loads(manifest_path.read_text()).get("files", {}) if manifest_path.exists() else {}
@@ -115,6 +128,10 @@ def main(argv):
         skip = set(skip_file.read_text().split()) if skip_file.exists() else set()
         skills_root = KIT_ROOT / "skills"
         for sd in sorted(p for p in skills_root.iterdir() if p.is_dir() and p.name != "agent-kit"):
+            if chosen != "*" and sd.name not in chosen:
+                if (target / ".claude/skills" / sd.name).exists() and any(k.startswith(f".claude/skills/{sd.name}/") for k in old):
+                    log.append(f"note   skill {sd.name} is outside profile '{profile}' (installed earlier; remove by hand if unwanted)")
+                continue
             if (public and sd.name in CI_SKIP_SKILLS) or sd.name in skip:
                 continue
             for f in sorted(sd.rglob("*")):
@@ -156,6 +173,13 @@ def main(argv):
         put(SKILL_DIR / "assets/github/agent-kit-guard.yml", ".github/workflows/agent-kit-guard.yml", True)
         if not (target / ".github/CODEOWNERS").exists() and not (target / "CODEOWNERS").exists():
             log.append("hint   add a CODEOWNERS line so .claude/ changes need your review:  /.claude/ @<your-github-user>")
+    if not dry and profile != "full" or pf.exists():
+        if not dry:
+            pf.parent.mkdir(parents=True, exist_ok=True)
+            pf.write_text(profile + "\n")
+    # 4c. rules for tools without hooks
+    if cursor:
+        put(SKILL_DIR / "templates/cursor-agent-kit.mdc", ".cursor/rules/agent-kit.mdc", True)
     # 5. entry points (create only)
     tpl = SKILL_DIR / "templates"
     put(tpl / ("AGENTS.public-ci.md" if public else "AGENTS.md"), "AGENTS.md", False)
