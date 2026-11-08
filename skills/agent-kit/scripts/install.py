@@ -131,6 +131,13 @@ def main(argv):
     if not dry:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(json.dumps({"version": VERSION, "files": new}, indent=2) + "\n")
+    # 7. warn when git would not track the shared config (other sessions would never get it)
+    import subprocess
+    for rel in (".claude/settings.json", ".claude/agent-kit/session-context.sh", ".claude/output-styles/caveman.md", "AGENTS.md"):
+        if (target / rel).exists():
+            r = subprocess.run(["git", "-C", str(target), "check-ignore", "-q", rel], capture_output=True)
+            if r.returncode == 0:
+                log.append(f"WARN   {rel} is git-ignored: add a '!{rel}' (or its folder) exception to .gitignore")
     print("\n".join(log) or "up to date")
     print(f"\nagent-kit {VERSION} -> {target}{' (dry run)' if dry else ''}")
     print("Next: fill {{PLACEHOLDERS}} (grep -rn '{{' AGENTS.md docs/agents/OWNER_DECISIONS.md); resolve every SKIP by hand.")
