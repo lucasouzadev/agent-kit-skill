@@ -1,58 +1,65 @@
-# agent-kit
+# Agent Kit
 
-A portable documentation and configuration standard for AI coding agents (Claude Code, Codex, Cursor).
-Built from the strongest practices of five working repositories (Dialetto, Monologue, Arke and two public CI repos) and meant to drop into any new or existing project.
+A portable documentation and workflow standard for AI coding agents (Claude Code, Codex, Cursor and any tool that reads `AGENTS.md`), packaged as a Claude Code plugin and as plain Agent Skills.
 
-## Design
+It was distilled from several production repositories (web + BaaS, React Native, native iOS/Android, public CI) where agents worked daily, and generalized so it fits any project.
 
-- **Short core, modules on demand.** `AGENTS.md` (≤ 120 lines) is the only thing loaded every session. Everything else is a doc or a skill opened by task (`standard/00-MAP.md`).
-- **Meeting-style sessions.** The owner starts with a short message; agents boot from `AGENTS.md` + the handoff and detect their mode. No kickoff prompt.
-- **Automatic economy (Claude Code):** terse output style, earlier auto-compaction, hooks that steer the compaction summary and re-inject the session state afterwards.
-- **Evidence over claims:** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified.
-- **Human approval gate** before any write; builds and releases only on explicit order.
+## Why
+- **Boot cost.** Agent docs grow until every session pays tens of thousands of tokens before work starts, and pays again after every compaction.
+- **Rework.** The same bug "fixed" five times, "done" without evidence, plans lost to compaction.
+- **Noise.** Long replies the owner has to read.
 
-## Contents
-
-| Path | Role |
-|---|---|
-| `templates/AGENTS.md` | Entry point for app repos (placeholders `{{...}}`) |
-| `templates/AGENTS.public-ci.md` | Entry point for public CI/build repos |
-| `templates/CLAUDE.md` | `@AGENTS.md` + Claude Code notes |
-| `standard/` | Generic rules, installed to `docs/agents/standard/` |
-| `.claude/settings.json` | `outputStyle`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, hooks |
-| `.claude/output-styles/caveman.md` | Terse replies (≤ 15 lines), keeps coding instructions |
-| `.claude/hooks/` | `session-context.sh` (SessionStart startup/resume/compact), `precompact.sh` (PreCompact) — read-only |
-| `.claude/skills/` | `caveman`, `session-preflight`, `systematic-debug`, `fundamentals-audit`, `ux-check`, `handoff` |
-
-### `standard/`
-`00-MAP` (what to read when) · `MODES` (Fixer, Builder, Product, Architect, Lens, Auditor) · `WORKFLOW` · `QUALITY-GATES` (G1/G2) · `DONE` · `SAFEGUARDS` · `TASK-CONTRACT` · `HANDOFF-TEMPLATE` · `REWORK-LEDGER` · `OWNER-DECISIONS-TEMPLATE` · `ORCHESTRATION` · `THREAT-MODEL` · `CHANGELOG-GUIDE` · `CONTEXT-BUDGET` · `CANARY` · `SECURITY-PERFORMANCE`
+## What you get
+- **Short core, modules on demand.** `AGENTS.md` (≤ 120 lines) is the only always-loaded file; the rest is a doc or a skill opened by task.
+- **Meeting-style sessions.** The owner starts with a short message; the agent boots from `AGENTS.md` + the handoff and picks its mode. No kickoff prompt.
+- **Terse output.** `caveman` output style: ≤ 15 lines, result first, nothing important dropped.
+- **Early, lossless compaction.** Compaction at 200k tokens instead of near a 1M window; a `PreCompact` hook tells the summary to keep the active state; a `SessionStart` hook re-injects branch, commits and handoff after compaction; a statusline shows context use.
+- **Evidence over claims.** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified; human approval gate before writes.
+- **Security & performance skills** anchored on OWASP Top 10:2025, ASVS 5.0, MASVS v2.1, NIST SP 800-63-4, SSDF, SLSA, Core Web Vitals, Android vitals and Apple hang metrics.
 
 ## Install
 
-```bash
-git clone https://github.com/lucasouzadev/agent-kit-skill agent-kit
-./agent-kit/install.sh /path/to/project            # app repo
-./agent-kit/install.sh /path/to/ci-repo --public-ci # public CI repo
-grep -n '{{' /path/to/project/AGENTS.md             # fill placeholders
+### As a Claude Code plugin (skills, output style and hooks for every project)
 ```
+/plugin install agent-kit --marketplace lucasouzadev/agent-kit-skill
+```
+or `/plugin marketplace add lucasouzadev/agent-kit-skill` then `/plugin install agent-kit@agent-kit`.
+Then, inside a repository, ask: *"set up agent-kit in this repo"* — the `agent-kit` skill surveys the repo, proposes a plan and runs the installer with `--no-vendor`.
 
-- Existing files are never overwritten without `--force`; the script lists every `SKIP` so you can merge by hand (or ask an agent to).
-- Existing project skills with the same name win; keep project-specific detail in project docs and point to it from `AGENTS.md` §4.
-- Session state file elsewhere than `HANDOFF.md`? List the paths (files or folders) in `.claude/handoff-paths`.
-- **Canary:** set your form of address once in each tool's *personal* settings (e.g. `~/.claude/CLAUDE.md`: `Address me as <name> in every reply.`). It is never stored in a repository.
+### Vendored into a repository (works where plugins are not installed: cloud sessions, teammates, other tools)
+```bash
+git clone https://github.com/lucasouzadev/agent-kit-skill
+python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo --dry-run
+python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo          # add --public-ci for public CI repos
+grep -rn '{{' /path/to/repo/AGENTS.md                                               # fill placeholders
+```
+Use **either** the plugin hooks or the vendored hooks in a given repo, not both. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
 
-## Update a project
-Re-run `install.sh`; `docs/agents/standard/` is kit-owned and refreshed; everything else is reported as `SKIP` if it diverged.
-
-## Provenance
-| Practice | From |
+## Contents
+| Path | Role |
 |---|---|
-| Task contract, evidence states, safeguards, threat model, authority order, untrusted-input rule, public changelog guide, private canary | Arke |
-| Modes, approval gate, QUALITY-G1/G2, definition of done, session packet, context budget, sub-agent orchestration, "do not reopen", merged ≠ production | Dialetto |
-| Reading map by tiers, rework ledger, caveman, owner decisions log, handoff fields, "tests must not fake the platform" | Monologue |
-| Public CI rules (no secrets/artifacts, dispatch-only, BLOCKED ≠ PASS) | dialetto-builds, monologue-builds |
-| Security & performance invariants | "Guia agnóstico de stack de Performance e Segurança" (phase 3 turns it into skills) |
+| `skills/agent-kit/` | setup skill: `templates/`, `standard/` docs, `assets/claude/` (settings, hooks, statusline), `scripts/install.py` |
+| `skills/caveman` | terse output |
+| `skills/session-preflight` | session packet before acting |
+| `skills/systematic-debug` | four-step root cause, two-attempt stop |
+| `skills/fundamentals-audit` | race, idempotency, client trust, separation, integration tests |
+| `skills/ux-check` | UX laws, states, a11y, responsiveness, UI performance |
+| `skills/handoff` | session state file |
+| `skills/security-core` · `identity-session` · `data-privacy` · `supply-chain` | security modules |
+| `skills/performance-core` · `platform-security` | performance and per-platform (native, web, hybrid WebView, desktop web runtime) |
+| `output-styles/caveman.md` | terse output style |
+| `hooks/hooks.json` | plugin hooks (SessionStart, PreCompact) |
+
+### `standard/` docs
+`00-MAP` · `MODES` (Fixer, Builder, Product, Architect, Lens, Auditor) · `WORKFLOW` · `QUALITY-GATES` (G1/G2) · `DONE` · `SAFEGUARDS` · `TASK-CONTRACT` · `HANDOFF-TEMPLATE` · `REWORK-LEDGER` · `OWNER-DECISIONS-TEMPLATE` · `ORCHESTRATION` · `THREAT-MODEL` · `CHANGELOG-GUIDE` · `CONTEXT-BUDGET` · `CANARY` · `SECURITY-PERFORMANCE`
+
+## Canary
+Optional weak signal that the agent loaded the rules: the owner gives a form of address at the start of each session and the agent uses it in every reply. It is never written to any file.
 
 ## Notes
-- `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` can only lower the compaction threshold. If a Claude Code version ignores it from project `env`, nothing breaks; use `/autocompact` manually.
-- The output style needs a recent Claude Code; unknown styles fall back to Default.
+- `autoCompactWindow` / `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (100k–1M). If a Claude Code version ignores them from project settings, put them in `~/.claude/settings.json`.
+- Custom output styles need a recent Claude Code; unknown styles fall back to Default.
+- Plugins cannot set `outputStyle`, `env` or `statusLine`; the installer writes those to the project settings.
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).

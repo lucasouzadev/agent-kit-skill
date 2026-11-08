@@ -4,7 +4,7 @@ CI only: workflows, E2E flows and scripts for the private repo `{{PRIVATE_REPO}}
 Working rules live in the private repo ({{PRIVATE_RULES}}). Built on agent-kit {{KIT_VERSION}}; generic rules in `docs/agents/standard/`.
 
 ## Session start
-Read this file and `README.md`. Newest state first (latest runs, `git log -15`). Output to the owner: caveman, ≤ 15 lines, in {{OWNER_LANGUAGE}}, canary per `docs/agents/standard/CANARY.md`.
+Read this file and `README.md`. Newest state first (latest runs, `git log -15`). Output to the owner: caveman, ≤ 15 lines, in {{OWNER_LANGUAGE}}, canary (form of address given by the owner at session start; never stored) per `docs/agents/standard/CANARY.md`.
 
 ## Never, in this repository
 - Print, log or commit a secret, token, key, keystore, certificate, profile or anything decoded from them. Masking protects logs only, never files.

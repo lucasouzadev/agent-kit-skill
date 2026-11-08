@@ -28,7 +28,7 @@ The owner opens sessions with a short, meeting-style message. Do not ask for a k
 - ≤ 15 short lines; result first, then evidence, then what is NOT proven, then the next step or the owner's decision.
 - No preamble, recap, hedging or praise. Compress, never drop a result, cause, risk or decision.
 - Long material goes to a file; the reply gives one line and the path.
-- **Canary:** every chat reply to the owner contains the owner's private form of address, taken only from the owner's personal agent settings or the current chat. Never write it to any file, commit, PR, log or artifact. Unknown → say `CANARY NOT CONFIGURED`; never guess from git/email. Details: `docs/agents/standard/CANARY.md`.
+- **Canary:** the owner states a form of address at the start of each session; use it in every chat reply, keep it only in the conversation, never in any file, commit, PR, log or handoff. Not given yet → ask once, then prefix `CANARY NOT CONFIGURED`. Details: `docs/agents/standard/CANARY.md`.
 
 ## 3. Workflow (details: `docs/agents/standard/WORKFLOW.md`)
 
