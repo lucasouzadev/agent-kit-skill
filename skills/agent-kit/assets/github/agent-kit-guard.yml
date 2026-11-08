@@ -18,5 +18,9 @@ jobs:
       - name: No automatic network or write in hooks
         run: |
           # action-guard.sh quotes these words as patterns to detect; its integrity is covered by the manifest check above.
-          if grep -nE '(curl|wget|nc |ssh |scp |git push|rm -rf /)' $(ls .claude/agent-kit/*.sh | grep -v 'action-guard.sh'); then
-            echo "::error::hooks must stay offline and read-only"; exit 1; fi
+          bad=0
+          for f in .claude/agent-kit/*.sh; do
+            case "$f" in */action-guard.sh) continue ;; esac
+            if grep -nE '(curl|wget|nc |ssh |scp |git push|rm -rf /)' "$f"; then bad=1; fi
+          done
+          if [ "$bad" = 1 ]; then echo "::error::hooks must stay offline and read-only"; exit 1; fi

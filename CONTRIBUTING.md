@@ -12,6 +12,6 @@ Contributions are welcome: new skills, platform modules, better defaults, transl
 
 ## Process
 - Open an issue for larger changes first.
-- Run `bash tests/run.sh` (and `claude plugin validate .` if you have Claude Code) before the PR; CI runs the tests and actionlint.
+- Run `bash tests/run.sh` (and `claude plugin validate .` if you have Claude Code) before the PR; CI runs the tests and actionlint **with shellcheck**: install both locally (`pip install actionlint-py shellcheck-py`) or you will miss what CI reports.
 - New hook behaviour needs a test in `tests/run.sh`; hooks stay offline and never store prompt text.
 - Bump `version` in `.claude-plugin/plugin.json` and `skills/agent-kit/VERSION`, and add a CHANGELOG entry.
