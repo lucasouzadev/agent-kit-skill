@@ -29,5 +29,13 @@ Principle: a short core loaded every session, everything else opened by task. Th
 | `.claude/agent-kit/` | `session-context.sh` (SessionStart), `precompact.sh` (PreCompact), `usage-guard.sh` (UserPromptSubmit), `statusline.sh` (context + plan usage), `manifest.json` |
 | `.claude/skills/`, `.claude/output-styles/` | vendored copies (skip with `--no-vendor`) |
 
+## Options
+- `--with-guard`: CI workflow that fails PRs changing kit hooks outside the installer; add CODEOWNERS for `.claude/`. Skip it on private repos without Actions minutes.
+- `.claude/agent-kit/overrides`: `NAME.md=path` per line when the project has its own version of a standard doc (one source of truth).
+- `.claude/agent-kit/skip-skills`: kit skills the project replaces with its own.
+
+## Measure
+`python3 .claude/agent-kit/metrics.py report [--days N]` — sessions, prompts/session, compactions, peak context, modes, baton offers, git rework hotspots. Counts only; data stays in `~/.local/state/agent-kit/`. Run it weekly and cut what does not pay off.
+
 ## Compaction defaults (why 200k)
 Large-context models otherwise compact near their full window, after quality has already degraded. 200k keeps sessions sharp and cheap; tune `autoCompactWindow` (100k–1M). The statusline shows `ctx used/window` and asks for a handoff from 70 %. If a Claude Code version ignores the project value, set it in `~/.claude/settings.json`.

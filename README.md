@@ -17,6 +17,8 @@ It was distilled from several production repositories (web + BaaS, React Native,
 - **Early, lossless compaction.** Compaction at 200k tokens instead of near a 1M window; a `PreCompact` hook tells the summary to keep the active state; a `SessionStart` hook re-injects branch, commits and handoff after compaction; a statusline shows context use.
 - **Evidence over claims.** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified; human approval gate before writes.
 - **Device lab in CI.** No Mac or spare phones? Workflow templates build and test on hosted emulators/simulators, package APK/TestFlight builds, publish Expo OTA and run Maestro — with a safe secret list and public-repo hardening.
+- **Measured, not assumed.** Local metrics (counts only, never prompt text): sessions, compactions, peak context, modes, baton offers, plus a git rework signal — `python3 .claude/agent-kit/metrics.py report`.
+- **Hooks you can trust.** Kit files are hash-checked against the install manifest at session start; an optional CI guard blocks PRs that change hooks outside the installer.
 - **Security & performance skills** anchored on OWASP Top 10:2025, ASVS 5.0, MASVS v2.1, NIST SP 800-63-4, SSDF, SLSA, Core Web Vitals, Android vitals and Apple hang metrics.
 
 ## Install
@@ -35,7 +37,8 @@ python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo --dry-
 python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo          # add --public-ci for public CI repos
 grep -rn '{{' /path/to/repo/AGENTS.md                                               # fill placeholders
 ```
-Use **either** the plugin hooks or the vendored hooks in a given repo, not both. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
+Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
+Options: `--with-guard` (CI guard for `.claude/` changes + CODEOWNERS hint) · `.claude/agent-kit/overrides` (`NAME.md=path`) when the project keeps its own version of a standard doc · `.claude/agent-kit/skip-skills` to opt out of a kit skill. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
 
 ## Contents
 | Path | Role |
@@ -68,4 +71,4 @@ Optional weak signal that the agent loaded the rules: the owner gives a form of 
 - Plugins cannot set `outputStyle`, `env` or `statusLine`; the installer writes those to the project settings.
 
 ## Contributing
-See [CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).
+Run `bash tests/run.sh` before a PR (CI runs it too). See [CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).

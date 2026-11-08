@@ -2,7 +2,7 @@
 """agent-kit installer (stdlib only).
 
 Usage:
-  python3 install.py <target-repo> [--public-ci] [--no-vendor] [--dry-run]
+  python3 install.py <target-repo> [--public-ci] [--no-vendor] [--with-guard] [--dry-run]
 
 What it does
   * docs/agents/standard/          kit-owned docs, always refreshed
@@ -11,11 +11,16 @@ What it does
   * .claude/output-styles/caveman.md and .claude/skills/<kit skills>/   (unless --no-vendor)
   * AGENTS.md, CLAUDE.md, docs/agents/OWNER_DECISIONS.md   created only if missing
 
+--with-guard: adds .github/workflows/agent-kit-guard.yml (fails PRs that change kit hooks
+without re-running the installer) and suggests a CODEOWNERS entry for .claude/.
+
 Safe updates: every file the kit writes is recorded with its hash in
 .claude/agent-kit/manifest.json. On re-install a file is replaced only if it is
 unchanged since the kit wrote it; files you edited are reported as SKIP.
 --no-vendor: use when the agent-kit plugin is installed (skills, output style and
 hooks come from the plugin; only docs, settings keys and templates are written).
+Point a generic standard doc to the project's own version: .claude/agent-kit/overrides,
+one "NAME.md=path/from/repo/root.md" per line (adds a banner to the generic doc).
 Opt out of a kit skill (e.g. the project has its own variant): list its name in
 .claude/agent-kit/skip-skills, one per line.
 """
@@ -42,14 +47,25 @@ def main(argv):
     target = Path(argv[0]).resolve()
     public = "--public-ci" in argv
     vendor = "--no-vendor" not in argv
+    guard = "--with-guard" in argv
     dry = "--dry-run" in argv
     manifest_path = target / ".claude/agent-kit/manifest.json"
     old = json.loads(manifest_path.read_text()).get("files", {}) if manifest_path.exists() else {}
     new = {}
     log = []
 
-    def put(src: Path, rel: str, owned: bool):
-        """owned=True: kit file, refreshed if untouched. owned=False: create only."""
+    def put(src: Path, rel: str, owned: bool, data: bytes = None):
+        """owned=True: kit file, refreshed if untouched. owned=False: create only.
+        data: write these bytes instead of src (e.g. a doc with an override banner)."""
+        if data is not None:
+            tmp = target / ".claude/agent-kit/.tmp-put"
+            if not dry:
+                tmp.parent.mkdir(parents=True, exist_ok=True)
+                tmp.write_bytes(data)
+                src = tmp
+            else:
+                import tempfile
+                fd = tempfile.NamedTemporaryFile(delete=False); fd.write(data); fd.close(); src = Path(fd.name)
         dst = target / rel
         if dst.exists():
             same = sha(src) == sha(dst)
@@ -72,11 +88,23 @@ def main(argv):
             shutil.copy2(src, dst)
         new[rel] = sha(src)
 
-    # 1. standard docs
+    # 1. standard docs (a project doc can override one: .claude/agent-kit/overrides, "NAME.md=path")
+    ov_file = target / ".claude/agent-kit/overrides"
+    overrides = {}
+    if ov_file.exists():
+        for line in ov_file.read_text().splitlines():
+            if "=" in line and not line.strip().startswith("#"):
+                k, v = line.split("=", 1)
+                overrides[k.strip()] = v.strip()
     for f in sorted((SKILL_DIR / "standard").glob("*.md")):
-        put(f, f"docs/agents/standard/{f.name}", True)
+        if f.name in overrides:
+            banner = (f"> **Overridden in this project by [`{overrides[f.name]}`](../../../{overrides[f.name]}).** "
+                      f"Follow that file; read this one only for what it does not cover.\n\n").encode()
+            put(f, f"docs/agents/standard/{f.name}", True, banner + f.read_bytes())
+        else:
+            put(f, f"docs/agents/standard/{f.name}", True)
     # 2. hooks + statusline
-    for f in sorted((SKILL_DIR / "assets/claude").glob("*.sh")):
+    for f in sorted([*(SKILL_DIR / "assets/claude").glob("*.sh"), *(SKILL_DIR / "assets/claude").glob("*.py")]):
         put(f, f".claude/agent-kit/{f.name}", True)
     # 3. vendored skills + output style
     if vendor:
@@ -123,11 +151,19 @@ def main(argv):
         if not dry:
             sp.parent.mkdir(parents=True, exist_ok=True)
             sp.write_text(json.dumps(cur, indent=2, ensure_ascii=False) + "\n")
+    # 4b. optional CI guard for the hooks
+    if guard:
+        put(SKILL_DIR / "assets/github/agent-kit-guard.yml", ".github/workflows/agent-kit-guard.yml", True)
+        if not (target / ".github/CODEOWNERS").exists() and not (target / "CODEOWNERS").exists():
+            log.append("hint   add a CODEOWNERS line so .claude/ changes need your review:  /.claude/ @<your-github-user>")
     # 5. entry points (create only)
     tpl = SKILL_DIR / "templates"
     put(tpl / ("AGENTS.public-ci.md" if public else "AGENTS.md"), "AGENTS.md", False)
     put(tpl / "CLAUDE.md", "CLAUDE.md", False)
     put(tpl / "OWNER_DECISIONS.md", "docs/agents/OWNER_DECISIONS.md", False)
+    tmp = target / ".claude/agent-kit/.tmp-put"
+    if tmp.exists():
+        tmp.unlink()
     # 6. manifest
     if not dry:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)

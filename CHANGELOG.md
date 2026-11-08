@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0 — 2026-11-08
+- **Measure:** `metrics.py` logs counts only (sessions, prompts and likely mode, compactions, peak context, baton offers) to `~/.local/state/agent-kit/` — never prompt text; `metrics.py report` adds a git rework signal (files with ≥ 3 fix commits). `AGENT_KIT_METRICS=0` disables.
+- **Hook integrity:** `verify.py` compares kit files with the install manifest; the SessionStart hook warns when hooks changed; optional `--with-guard` CI workflow fails PRs that change hooks outside the installer and checks hooks stay offline; CODEOWNERS hint.
+- **Single source of truth:** `.claude/agent-kit/overrides` (`NAME.md=path`) marks a generic standard doc as overridden by the project's own, with a banner.
+- **Kit CI:** `tests/run.sh` (syntax, JSON/YAML, frontmatter, versions, installer idempotency/overrides/guard, hooks, metrics privacy, verify, encryption, personal-data guard) + `ci` workflow with actionlint.
+- Fixes: installer now ships `.py` assets; SessionStart hook resolves its folder before changing directory.
+
 ## 1.4.0 — 2026-11-08
 - `intent-compiler` skill: the owner's plain message is compiled, invisibly, into a brief (goal, repo context, acceptance, constraints, mode, skills, ≤ 1 question) before acting; rubric with examples.
 - `intent-brief` UserPromptSubmit hook: one-line reminder with a likely mode; silent for approvals, short acks and slash commands; never echoes the owner's text.
