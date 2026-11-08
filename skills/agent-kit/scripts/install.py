@@ -16,6 +16,8 @@ Safe updates: every file the kit writes is recorded with its hash in
 unchanged since the kit wrote it; files you edited are reported as SKIP.
 --no-vendor: use when the agent-kit plugin is installed (skills, output style and
 hooks come from the plugin; only docs, settings keys and templates are written).
+Opt out of a kit skill (e.g. the project has its own variant): list its name in
+.claude/agent-kit/skip-skills, one per line.
 """
 import hashlib
 import json
@@ -81,9 +83,11 @@ def main(argv):
         style = KIT_ROOT / "output-styles/caveman.md"
         if style.exists():
             put(style, ".claude/output-styles/caveman.md", True)
+        skip_file = target / ".claude/agent-kit/skip-skills"
+        skip = set(skip_file.read_text().split()) if skip_file.exists() else set()
         skills_root = KIT_ROOT / "skills"
         for sd in sorted(p for p in skills_root.iterdir() if p.is_dir() and p.name != "agent-kit"):
-            if public and sd.name in CI_SKIP_SKILLS:
+            if (public and sd.name in CI_SKIP_SKILLS) or sd.name in skip:
                 continue
             for f in sorted(sd.rglob("*")):
                 if f.is_file():
