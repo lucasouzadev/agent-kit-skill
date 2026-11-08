@@ -1,0 +1,16 @@
+---
+description: agent-kit rules for this repository (always applied)
+alwaysApply: true
+---
+
+Read `AGENTS.md` first (single entry point), then the session state file it names.
+
+This tool has no agent-kit hooks, so do their duties by hand: `docs/agents/standard/NO-HOOKS.md`.
+
+Always:
+- Present a plan and wait for the owner's explicit "yes" before the first edit, commit, migration, deploy or config change.
+- Ask before push to the default branch, force-push, deploy, real builds/releases, publishing, destructive SQL/infra, or printing a secret.
+- Compile every owner message into a private brief (goal, repo context, acceptance, constraints, mode); show only goal + acceptance.
+- Replies: ≤ 15 short lines, result first, in the owner's language. Evidence states: PASS / FAIL / BLOCKED / NOT RUN / N/A.
+- Update the handoff before the context fills; offer a continuation prompt when the owner says limits are near.
+- Never write secrets or the owner's form of address into files, commits or PRs.

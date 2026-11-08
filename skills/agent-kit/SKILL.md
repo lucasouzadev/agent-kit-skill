@@ -26,8 +26,21 @@ Principle: a short core loaded every session, everything else opened by task. Th
 | `docs/agents/standard/` | generic rules: map, modes, workflow, quality gates, done, safeguards, contracts, handoff, rework ledger, orchestration, threat model, context budget, canary, security/performance invariants |
 | `docs/agents/OWNER_DECISIONS.md` | dated log of standing owner instructions |
 | `.claude/settings.json` (merged) | `outputStyle: caveman`, `autoCompactWindow` 200k + env fallback, statusline, hooks |
-| `.claude/agent-kit/` | `session-context.sh` (SessionStart), `precompact.sh` (PreCompact), `statusline.sh`, `manifest.json` |
+| `.claude/agent-kit/` | `session-context.sh` (SessionStart), `precompact.sh` (PreCompact), `usage-guard.sh` (UserPromptSubmit), `statusline.sh` (context + plan usage), `manifest.json` |
 | `.claude/skills/`, `.claude/output-styles/` | vendored copies (skip with `--no-vendor`) |
+
+## Options
+- `--pr-quality local|ci`: PR template, `.github/pr-quality.json` and `.github/scripts/pr_quality.py` (agents lint the PR body offline); `ci` adds the check workflow. Choose `local` on private repos with scarce Actions minutes. Keep the project's own PR template if it has one (create-only) and mirror its headings in `pr-quality.json`.
+- Check for updates: `python3 .claude/agent-kit/update.py check` (explicit network call).
+- `--profile lite|standard|full`: how many kit skills to vendor (7 / 15 / all). Recommend **lite** to newcomers and small projects, **standard** for apps with real users, **full** when the project builds in CI. Remembered in `.claude/agent-kit/profile`.
+- `--cursor`: write `.cursor/rules/agent-kit.mdc` (automatic when `.cursor/` exists). Tools without hooks follow `docs/agents/standard/NO-HOOKS.md`.
+- `guard-allow` / `guard-extra` in `.claude/agent-kit/`: standing authorizations (e.g. `eas build .*simulator`) and project-specific risky commands for the `action-guard` hook.
+- `--with-guard`: CI workflow that fails PRs changing kit hooks outside the installer; add CODEOWNERS for `.claude/`. Skip it on private repos without Actions minutes.
+- `.claude/agent-kit/overrides`: `NAME.md=path` per line when the project has its own version of a standard doc (one source of truth).
+- `.claude/agent-kit/skip-skills`: kit skills the project replaces with its own.
+
+## Measure
+`python3 .claude/agent-kit/metrics.py report [--days N]` — sessions, prompts/session, compactions, peak context, modes, baton offers, git rework hotspots. Counts only; data stays in `~/.local/state/agent-kit/`. Run it weekly and cut what does not pay off.
 
 ## Compaction defaults (why 200k)
 Large-context models otherwise compact near their full window, after quality has already degraded. 200k keeps sessions sharp and cheap; tune `autoCompactWindow` (100k–1M). The statusline shows `ctx used/window` and asks for a handoff from 70 %. If a Claude Code version ignores the project value, set it in `~/.claude/settings.json`.

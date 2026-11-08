@@ -1,0 +1,7 @@
+{
+  "_comment": "agent-kit PR quality config. Anything omitted uses the defaults in pr_quality.py. Headings are regexes, case-insensitive.",
+  "required_sections": [["summary", "resumo", "scope", "task"], ["quality-g1", "\\bg1\\b"], ["quality-g2", "\\bg2\\b"]],
+  "evidence_sections": ["quality-g2", "\\bg2\\b"],
+  "delivery": { "labels": ["delivery", "entrega"], "options": ["OTA", "build", "server", "servidor", "N/A"], "required": true },
+  "min_body_chars": 300
+}

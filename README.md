@@ -11,11 +11,18 @@ It was distilled from several production repositories (web + BaaS, React Native,
 
 ## What you get
 - **Short core, modules on demand.** `AGENTS.md` (≤ 120 lines) is the only always-loaded file; the rest is a doc or a skill opened by task.
-- **Meeting-style sessions.** The owner starts with a short message; the agent boots from `AGENTS.md` + the handoff and picks its mode. No kickoff prompt.
+- **Meeting-style sessions.** The owner talks, the agent leads (`session-guide`): it boots from `AGENTS.md` + the handoff, briefs where things stopped, restates each request as goal + acceptance, and asks one question at a time. No prompt writing: every message is silently compiled into an effective brief (`intent-compiler`) — goal, context pulled from the repo, acceptance, constraints, mode, skills — that only the agent reads.
+- **Pass the baton.** The statusline shows weekly/5-hour plan usage; near the limit a hook makes the agent offer a self-contained continuation prompt (`baton-pass`) you can paste into any other IDE, model or platform.
 - **Terse output.** `caveman` output style: ≤ 15 lines, result first, nothing important dropped.
 - **Early, lossless compaction.** Compaction at 200k tokens instead of near a 1M window; a `PreCompact` hook tells the summary to keep the active state; a `SessionStart` hook re-injects branch, commits and handoff after compaction; a statusline shows context use.
 - **Evidence over claims.** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified; human approval gate before writes.
 - **Device lab in CI.** No Mac or spare phones? Workflow templates build and test on hosted emulators/simulators, package APK/TestFlight builds, publish Expo OTA and run Maestro — with a safe secret list and public-repo hardening.
+- **The approval gate is enforced, not just written.** A `PreToolUse` hook asks you before pushes to the default branch, deploys, store builds, CI dispatches, destructive SQL or secret reads, and blocks the catastrophic ones outright (seatbelt, not a sandbox; `ask` is not guaranteed in bypass modes).
+- **PR quality.** A template with QUALITY-G1/G2, a local linter and an optional check that fails PRs with unfilled evidence, `PASS` without proof, missing reasons, secrets or `pull_request_target` — and flags risky areas (workflows, hooks, migrations, dependencies, native shell, auth). It judges honesty and structure, not correctness.
+- **Pick your size.** `--profile lite` (7 skills) · `standard` (15) · `full`; fewer skills = fewer always-loaded tokens.
+- **Works beyond Claude Code.** Codex, Cursor and others get the same rules as plain text (`NO-HOOKS.md`, a Cursor rule); only the automation is Claude-specific.
+- **Measured, not assumed.** Local metrics (counts only, never prompt text): sessions, compactions, peak context, modes, baton offers, plus a git rework signal — `python3 .claude/agent-kit/metrics.py report`.
+- **Hooks you can trust.** Kit files are hash-checked against the install manifest at session start; an optional CI guard blocks PRs that change hooks outside the installer.
 - **Security & performance skills** anchored on OWASP Top 10:2025, ASVS 5.0, MASVS v2.1, NIST SP 800-63-4, SSDF, SLSA, Core Web Vitals, Android vitals and Apple hang metrics.
 
 ## Install
@@ -34,7 +41,8 @@ python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo --dry-
 python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo          # add --public-ci for public CI repos
 grep -rn '{{' /path/to/repo/AGENTS.md                                               # fill placeholders
 ```
-Use **either** the plugin hooks or the vendored hooks in a given repo, not both. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
+Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
+Options: `--pr-quality local|ci` · `--profile lite|standard|full` · `--cursor` · `--with-guard` (CI guard for `.claude/` changes + CODEOWNERS hint) · `.claude/agent-kit/overrides` (`NAME.md=path`) when the project keeps its own version of a standard doc · `.claude/agent-kit/skip-skills` to opt out of a kit skill. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
 
 ## Contents
 | Path | Role |
@@ -45,7 +53,11 @@ Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
 | `skills/systematic-debug` | four-step root cause, two-attempt stop |
 | `skills/fundamentals-audit` | race, idempotency, client trust, separation, integration tests |
 | `skills/ux-check` | UX laws, states, a11y, responsiveness, UI performance |
+| `skills/pr-quality` | honest PRs: template, self-review, local lint, how to read the CI check |
 | `skills/handoff` | session state file |
+| `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time, agenda |
+| `skills/intent-compiler` | invisible talk → brief conversion before acting (rubric + examples) |
+| `skills/baton-pass` | continuation prompt for another tool/session when limits are near |
 | `skills/security-core` · `identity-session` · `data-privacy` · `supply-chain` | security modules |
 | `skills/performance-core` · `platform-security` | performance and per-platform (native, web, hybrid WebView, desktop web runtime) |
 | `skills/ci-device-lab` | device lab in GitHub Actions: Android emulator, iOS simulator, APK/TestFlight builds, Expo OTA and EAS (cloud or local), Maestro E2E, private-source + public-CI pattern, secret list and hardening |
@@ -64,4 +76,4 @@ Optional weak signal that the agent loaded the rules: the owner gives a form of 
 - Plugins cannot set `outputStyle`, `env` or `statusLine`; the installer writes those to the project settings.
 
 ## Contributing
-See [CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).
+Run `bash tests/run.sh` before a PR (CI runs it too). See [CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).

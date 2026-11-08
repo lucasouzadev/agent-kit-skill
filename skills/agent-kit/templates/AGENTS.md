@@ -6,7 +6,7 @@ Keep this file under ~120 lines: it is loaded every session. History and dated d
 
 ## 0. Session start (no "start" prompt needed)
 
-The owner opens sessions with a short, meeting-style message. Do not ask for a kickoff prompt.
+The owner opens sessions with a short, meeting-style message. Do not ask for a kickoff prompt: lead the session (skill `session-guide`, `docs/agents/standard/CONVERSATION.md`) and compile each message into an invisible brief before acting (skill `intent-compiler`).
 1. Read this file, then the session state file (`{{HANDOFF_PATH}}`). Nothing else yet.
 2. Sync: `git fetch`; check `git log --oneline -15 origin/{{DEFAULT_BRANCH}}` and the branch/PR the task names. Merged ≠ deployed ≠ verified in production.
 3. Detect the mode from the request (`docs/agents/standard/MODES.md`) and open only the rows of `docs/agents/standard/00-MAP.md` that the task needs.
@@ -35,7 +35,9 @@ The owner opens sessions with a short, meeting-style message. Do not ask for a k
 Packet → QUALITY-G1 (surface + risk + tests designed first) → owner approval → small verified steps → QUALITY-G2 (evidence) → handoff.
 - One round = one root cause. Recurrence or second failure → skill `systematic-debug` and the rework ledger.
 - Before compaction or at session end, **replace** `{{HANDOFF_PATH}}` with the active state (template in `standard/HANDOFF-TEMPLATE.md`).
+- PRs: skill `pr-quality` (honest G1/G2 evidence; lint the description before opening).
 - Close every implementation with a test list for the owner: AUTOMATED vs PHYSICAL.
+- Weekly/5-hour usage high (the `usage-guard` hook says so) or tool switch → offer a continuation prompt (skill `baton-pass`).
 
 ## 4. Project
 
@@ -65,3 +67,7 @@ Packet → QUALITY-G1 (surface + risk + tests designed first) → owner approval
 ## 6. Authority order
 
 Explicit current owner instruction > this file > recorded decisions (ADR/OWNER_DECISIONS) > accepted spec > plan > `standard/` docs > existing code patterns. Status files report progress; they never redefine the product. On conflict, report it before working around it.
+
+## 7. Tools without hooks (Codex, Cursor, others)
+
+Hooks, output style and statusline exist only in Claude Code. In other tools do their duties by hand: `docs/agents/standard/NO-HOOKS.md` (session briefing, brief compilation, asking before risky actions, handoff before the context fills, baton).

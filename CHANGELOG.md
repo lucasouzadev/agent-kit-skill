@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.5.0 — 2026-11-08
+- **Measure:** `metrics.py` logs counts only (sessions, prompts and likely mode, compactions, peak context, baton offers) to `~/.local/state/agent-kit/` — never prompt text; `metrics.py report` adds a git rework signal (files with ≥ 3 fix commits). `AGENT_KIT_METRICS=0` disables.
+- **Hook integrity:** `verify.py` compares kit files with the install manifest; the SessionStart hook warns when hooks changed; optional `--with-guard` CI workflow fails PRs that change hooks outside the installer and checks hooks stay offline; CODEOWNERS hint.
+- **Single source of truth:** `.claude/agent-kit/overrides` (`NAME.md=path`) marks a generic standard doc as overridden by the project's own, with a banner.
+- **Kit CI:** `tests/run.sh` (syntax, JSON/YAML, frontmatter, versions, installer idempotency/overrides/guard, hooks, metrics privacy, verify, encryption, personal-data guard) + `ci` workflow with actionlint.
+- Fixes: installer now ships `.py` assets; SessionStart hook resolves its folder before changing directory.
+
+## 1.4.0 — 2026-11-08
+- `intent-compiler` skill: the owner's plain message is compiled, invisibly, into a brief (goal, repo context, acceptance, constraints, mode, skills, ≤ 1 question) before acting; rubric with examples.
+- `intent-brief` UserPromptSubmit hook: one-line reminder with a likely mode; silent for approvals, short acks and slash commands; never echoes the owner's text.
+- Installer merges each hook command individually (a new hook on an existing event is no longer skipped).
+
+## 1.3.0 — 2026-11-08
+- `session-guide` skill + `standard/CONVERSATION.md`: the agent leads sessions from plain talk (briefing, goal + acceptance restatement, one question at a time, agenda, parking lot).
+- `baton-pass` skill: self-contained continuation prompt for any IDE/model/platform; never includes secrets or the canary.
+- Statusline now shows weekly/5-hour plan usage and caches it; new `UserPromptSubmit` hook `usage-guard` asks the agent to offer a baton at weekly ≥ 85 % (5-hour ≥ 90 %), once per level per session (`AGENT_KIT_BATON_PCT` to tune).
+
 ## 1.2.0 — 2026-11-08
 - New skill `ci-device-lab`: GitHub Actions device lab for people without a Mac or spare devices — Android APK (Expo prebuild, React Native, Capacitor, native), iOS simulator build, Maestro E2E on emulator and simulator, Expo OTA, EAS build (cloud or `--local`), TestFlight without EAS; private-source + public-CI layout, read-only checkout script, AES-256-GCM artifact encryption, secret list by name, hardening checklist, owner-order guards on real builds.
 

@@ -1,0 +1,22 @@
+# agent-kit guard: hooks in .claude/ run on every agent session, so a PR that changes them is code
+# that will execute on contributors' machines. This check fails when kit-owned files differ from the
+# install manifest, forcing a deliberate review (re-run the installer, or update the manifest on purpose).
+name: agent-kit-guard
+on:
+  pull_request:
+    paths: [".claude/**"]
+permissions: { contents: read }
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Kit files match the manifest
+        run: |
+          if python3 .claude/agent-kit/verify.py .; then echo "agent-kit files match the manifest"; else
+            echo "::error::agent-kit files changed. Review the diff of .claude/ carefully; if intended, re-run the installer so the manifest records it."; exit 1; fi
+      - name: No automatic network or write in hooks
+        run: |
+          # action-guard.sh quotes these words as patterns to detect; its integrity is covered by the manifest check above.
+          if grep -nE '(curl|wget|nc |ssh |scp |git push|rm -rf /)' $(ls .claude/agent-kit/*.sh | grep -v 'action-guard.sh'); then
+            echo "::error::hooks must stay offline and read-only"; exit 1; fi
