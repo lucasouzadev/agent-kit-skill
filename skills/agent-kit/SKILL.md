@@ -26,7 +26,7 @@ Principle: a short core loaded every session, everything else opened by task. Th
 | `docs/agents/standard/` | generic rules: map, modes, workflow, quality gates, done, safeguards, contracts, handoff, rework ledger, orchestration, threat model, context budget, canary, security/performance invariants |
 | `docs/agents/OWNER_DECISIONS.md` | dated log of standing owner instructions |
 | `.claude/settings.json` (merged) | `outputStyle: caveman`, `autoCompactWindow` 200k + env fallback, statusline, hooks |
-| `.claude/agent-kit/` | `session-context.sh` (SessionStart), `precompact.sh` (PreCompact), `statusline.sh`, `manifest.json` |
+| `.claude/agent-kit/` | `session-context.sh` (SessionStart), `precompact.sh` (PreCompact), `usage-guard.sh` (UserPromptSubmit), `statusline.sh` (context + plan usage), `manifest.json` |
 | `.claude/skills/`, `.claude/output-styles/` | vendored copies (skip with `--no-vendor`) |
 
 ## Compaction defaults (why 200k)

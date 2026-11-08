@@ -6,7 +6,7 @@ Keep this file under ~120 lines: it is loaded every session. History and dated d
 
 ## 0. Session start (no "start" prompt needed)
 
-The owner opens sessions with a short, meeting-style message. Do not ask for a kickoff prompt.
+The owner opens sessions with a short, meeting-style message. Do not ask for a kickoff prompt: lead the session (skill `session-guide`, `docs/agents/standard/CONVERSATION.md`).
 1. Read this file, then the session state file (`{{HANDOFF_PATH}}`). Nothing else yet.
 2. Sync: `git fetch`; check `git log --oneline -15 origin/{{DEFAULT_BRANCH}}` and the branch/PR the task names. Merged ≠ deployed ≠ verified in production.
 3. Detect the mode from the request (`docs/agents/standard/MODES.md`) and open only the rows of `docs/agents/standard/00-MAP.md` that the task needs.
@@ -36,6 +36,7 @@ Packet → QUALITY-G1 (surface + risk + tests designed first) → owner approval
 - One round = one root cause. Recurrence or second failure → skill `systematic-debug` and the rework ledger.
 - Before compaction or at session end, **replace** `{{HANDOFF_PATH}}` with the active state (template in `standard/HANDOFF-TEMPLATE.md`).
 - Close every implementation with a test list for the owner: AUTOMATED vs PHYSICAL.
+- Weekly/5-hour usage high (the `usage-guard` hook says so) or tool switch → offer a continuation prompt (skill `baton-pass`).
 
 ## 4. Project
 

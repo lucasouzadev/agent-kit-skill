@@ -11,7 +11,8 @@ It was distilled from several production repositories (web + BaaS, React Native,
 
 ## What you get
 - **Short core, modules on demand.** `AGENTS.md` (≤ 120 lines) is the only always-loaded file; the rest is a doc or a skill opened by task.
-- **Meeting-style sessions.** The owner starts with a short message; the agent boots from `AGENTS.md` + the handoff and picks its mode. No kickoff prompt.
+- **Meeting-style sessions.** The owner talks, the agent leads (`session-guide`): it boots from `AGENTS.md` + the handoff, briefs where things stopped, restates each request as goal + acceptance, and asks one question at a time. No prompt writing.
+- **Pass the baton.** The statusline shows weekly/5-hour plan usage; near the limit a hook makes the agent offer a self-contained continuation prompt (`baton-pass`) you can paste into any other IDE, model or platform.
 - **Terse output.** `caveman` output style: ≤ 15 lines, result first, nothing important dropped.
 - **Early, lossless compaction.** Compaction at 200k tokens instead of near a 1M window; a `PreCompact` hook tells the summary to keep the active state; a `SessionStart` hook re-injects branch, commits and handoff after compaction; a statusline shows context use.
 - **Evidence over claims.** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified; human approval gate before writes.
@@ -46,6 +47,8 @@ Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
 | `skills/fundamentals-audit` | race, idempotency, client trust, separation, integration tests |
 | `skills/ux-check` | UX laws, states, a11y, responsiveness, UI performance |
 | `skills/handoff` | session state file |
+| `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time, agenda |
+| `skills/baton-pass` | continuation prompt for another tool/session when limits are near |
 | `skills/security-core` · `identity-session` · `data-privacy` · `supply-chain` | security modules |
 | `skills/performance-core` · `platform-security` | performance and per-platform (native, web, hybrid WebView, desktop web runtime) |
 | `skills/ci-device-lab` | device lab in GitHub Actions: Android emulator, iOS simulator, APK/TestFlight builds, Expo OTA and EAS (cloud or local), Maestro E2E, private-source + public-CI pattern, secret list and hardening |

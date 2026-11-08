@@ -1,13 +1,63 @@
 {
   "hooks": {
     "SessionStart": [
-      { "matcher": "startup", "hooks": [ { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/session-context.sh startup" } ] },
-      { "matcher": "resume",  "hooks": [ { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/session-context.sh resume" } ] },
-      { "matcher": "compact", "hooks": [ { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/session-context.sh compact" } ] }
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/session-context.sh startup"
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/session-context.sh resume"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/session-context.sh compact"
+          }
+        ]
+      }
     ],
     "PreCompact": [
-      { "matcher": "auto",   "hooks": [ { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/precompact.sh" } ] },
-      { "matcher": "manual", "hooks": [ { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/precompact.sh" } ] }
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/precompact.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/precompact.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/skills/agent-kit/assets/claude/usage-guard.sh"
+          }
+        ]
+      }
     ]
   }
 }
