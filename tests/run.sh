@@ -83,6 +83,74 @@ pass "profiles, cursor rule, no-hooks doc"
 if grep -nE '(curl|wget|nc |ssh |scp |git push|rm -rf /)' $(ls "$A"/*.sh | grep -v action-guard.sh) >/dev/null; then fail "hooks are not offline/read-only"; fi
 pass "hooks stay offline (guard rule)"
 
+# multilingual intent classifier
+mm() { printf '{"session_id":"s","prompt":"%s"}' "$1" | bash "$A/intent-brief.sh" | grep -o "Likely mode: [A-Za-z]*" | sed 's/Likely mode: //'; }
+chm() { [ "$(mm "$1")" = "$2" ] || fail "mode '$1' -> '$(mm "$1")', expected $2"; }
+chm "o login tá estranho no celular" Fixer; chm "the checkout is broken on Android" Fixer; chm "el login no funciona en iPhone" Fixer
+chm "como tá o projeto?" Status; chm "where are we on the release?" Status; chm "cómo va el proyecto" Status
+chm "continua de onde parou" Continue; chm "seguimos con el plan" Continue; chm "carry on" Continue
+chm "queria exportar as notas" Product; chm "i want a dark mode screen" Product; chm "agrega un botón de compartir" Builder; chm "add a share button" Builder
+chm "is it safe to retry the webhook" Auditor; chm "otimizar a arquitetura do banco" Architect; chm "bom dia time" unknown
+[ -z "$(mm "vale")" ] && [ -z "$(mm "pode")" ] || fail "acks must be silent"
+pass "intent modes en/pt/es + unknown"
+
+# no-python fallback: hooks fail open and the session banner warns
+B="$T/nopybin"; mkdir -p "$B"; for c in bash dirname cat head sed git wc tr ls grep cmp mkdir date cksum cut; do p="$(command -v $c)" && ln -sf "$p" "$B/$c"; done
+out="$(echo '{"session_id":"s"}' | PATH="$B" "$B/bash" "$A/session-context.sh" startup 2>&1)"; [[ "$out" == *"Python 3 not found"* ]] || fail "no-python banner"
+echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | PATH="$B" "$B/bash" "$A/action-guard.sh" >/dev/null 2>&1 || fail "guard must fail open without python (exit 0)"
+ln -sf "$(command -v python3)" "$B/python"; [ "$(g 'git push origin main')" = ask ] && echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | PATH="$B" "$B/bash" "$A/action-guard.sh" | grep -q '"ask"' || fail "python (not python3) must work"
+pass "hooks without python3 / without python"
+
+# update notice (offline) + explicit check
+export AGENT_KIT_STATE="$T/ustate"; echo 99.0.0 > "$T/LATEST"; export AGENT_KIT_LATEST_URL="file://$T/LATEST"
+out="$(echo '{"session_id":"s"}' | bash "$A/session-context.sh" startup)"; [[ "$out" != *"Update available"* ]] || fail "notice before check"
+python3 "$A/update.py" check | grep -q "available" || fail "update check"
+out="$(echo '{"session_id":"s"}' | bash "$A/session-context.sh" startup)"; [[ "$out" == *"Update available"* ]] || fail "update notice"
+out="$(echo '{"session_id":"s"}' | bash "$A/session-context.sh" startup)"; [[ "$out" != *"Update available"* ]] || fail "update notice should show once a day"
+unset AGENT_KIT_LATEST_URL; export AGENT_KIT_STATE="$T/state"
+pass "update notice"
+
+# PR quality
+Q="$KIT/assets/github"; PQ="python3 -W error $Q/pr_quality.py"
+pqo() { $PQ "$@" 2>&1 || true; }
+cat > "$T/good.md" <<'MD'
+## Summary
+- Fix the login layout on 360 px; task LOGIN-12; tested at abc1234.
+
+## QUALITY-G1 - before implementing
+- [x] Surface and risks mapped.
+
+## QUALITY-G2 - before Done / merge / release
+| Evidence | PASS / FAIL / BLOCKED / NOT RUN / N/A + reason | Command, SHA, run or link |
+| --- | --- | --- |
+| Lint, types, tests | PASS | `bun run check && bun run test` (412 passed) at abc1234 |
+| Native / device validation | BLOCKED: no physical device in this session | - |
+| Performance | N/A: no runtime change | - |
+**Delivery:** OTA
+**Risks:** none known; the change is isolated to one screen and covered by the new test.
+MD
+$PQ --body-file "$T/good.md" --config "$Q/pr-quality.json" --summary-file /dev/null >/dev/null 2>&1 || fail "good PR rejected"
+sed 's#| PASS | `bun run.*#| PASS | |#' "$T/good.md" > "$T/b1.md"; [[ "$(pqo --body-file "$T/b1.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"PASS without evidence"* ]] || fail "PASS without evidence not caught"
+sed 's#BLOCKED: no physical device in this session#BLOCKED#' "$T/good.md" > "$T/b2.md"; [[ "$(pqo --body-file "$T/b2.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"needs a reason"* ]] || fail "reason not required"
+sed 's#\*\*Delivery:\*\* OTA#**Delivery:** OTA / build / server / N/A#' "$T/good.md" > "$T/b3.md"; [[ "$(pqo --body-file "$T/b3.md" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"whole legend"* ]] || fail "legend not caught"
+$PQ --body-file "$Q/PULL_REQUEST_TEMPLATE.md" --config "$Q/pr-quality.json" --summary-file /dev/null >/dev/null 2>&1 && fail "unfilled template accepted"
+$PQ --body-file "$Q/PULL_REQUEST_TEMPLATE.ci.md" --config "$Q/pr-quality.ci.json" --summary-file /dev/null >/dev/null 2>&1 && fail "unfilled CI template accepted"
+echo '[{"filename":"src/a.ts","additions":1,"deletions":0,"patch":"+const k = \"AKIAABCDEFGHIJKLMNOP\";\n"}]' > "$T/f1.json"
+[[ "$(pqo --body-file "$T/good.md" --files-json "$T/f1.json" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"possible secret"* ]] || fail "secret in diff not caught"
+echo '[{"filename":".github/workflows/x.yml","additions":2,"deletions":0,"patch":"+on:\n+  pull_request_target:\n"}]' > "$T/f2.json"
+[[ "$(pqo --body-file "$T/good.md" --files-json "$T/f2.json" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"pull_request_target"* ]] || fail "pull_request_target not caught"
+out="$(PR_AUTHOR='dependabot[bot]' pqo --body-file "$T/b1.md" --config "$Q/pr-quality.json" --summary-file /dev/null)"; [[ "$out" != *"❌"* ]] || fail "bots must be skipped"
+G="$T/gitpr"; mkdir -p "$G" && git -C "$G" init -q -b main && git -C "$G" -c user.email=a@b -c user.name=t commit -q --allow-empty -m base
+git -C "$G" checkout -q -b feat && mkdir -p "$G/src" && echo 'const a = 1' > "$G/src/a.ts" && git -C "$G" add -A && git -C "$G" -c user.email=a@b -c user.name=t commit -q -m feat
+out="$(cd "$G" && pqo --body-file "$T/good.md" --git-base main --config "$Q/pr-quality.json" --summary-file /dev/null)"; [[ "$out" == *"no test/E2E file changed"* ]] || fail "git-base mode"
+PRP="$T/prq"; mkdir -p "$PRP" && git -C "$PRP" init -q && python3 "$KIT/scripts/install.py" "$PRP" --pr-quality ci >/dev/null
+for f in .github/PULL_REQUEST_TEMPLATE.md .github/pr-quality.json .github/scripts/pr_quality.py .github/workflows/pr-quality.yml; do [ -f "$PRP/$f" ] || fail "pr-quality install: $f"; done
+python3 "$KIT/scripts/install.py" "$PRP" --pr-quality ci | grep -qE '^(write|merge)' && fail "pr-quality install not idempotent"
+pass "pr-quality (checks, rules, bots, git mode, installer)"
+
+# static validation of workflow templates with actionlint when available
+if command -v actionlint >/dev/null 2>&1; then actionlint -color=false "$ROOT"/skills/ci-device-lab/templates/workflows/*.yml "$Q"/*.yml "$ROOT"/.github/workflows/*.yml || fail "actionlint"; pass "actionlint"; else echo "SKIP actionlint (not installed; CI runs it)"; fi
+
 # encryption round-trip + tamper
 S="$ROOT/skills/ci-device-lab/templates/scripts"; head -c 50000 /dev/urandom > "$T/b"
 export ARTIFACT_PASSPHRASE=0123456789abcdefghijklmnopqrstuv

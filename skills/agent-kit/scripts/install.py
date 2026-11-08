@@ -3,7 +3,7 @@
 
 Usage:
   python3 install.py <target-repo> [--public-ci] [--no-vendor] [--profile lite|standard|full]
-                             [--with-guard] [--cursor] [--dry-run]
+                             [--with-guard] [--pr-quality local|ci] [--cursor] [--dry-run]
 
 What it does
   * docs/agents/standard/          kit-owned docs, always refreshed
@@ -14,6 +14,9 @@ What it does
 
 --profile: which skills to vendor (lite 7 · standard 15 · full 17+; default full or the last choice, kept in
 .claude/agent-kit/profile). Skills already installed are never removed, only reported.
+--pr-quality: PR template + .github/pr-quality.json + .github/scripts/pr_quality.py (create-only for
+template/config). 'ci' also adds the pr-quality workflow (no secrets; script and config are read from the base
+branch). Use 'local' where Actions minutes are scarce: agents lint the PR body offline.
 --cursor: also write .cursor/rules/agent-kit.mdc (automatic when .cursor/ exists).
 --with-guard: adds .github/workflows/agent-kit-guard.yml (fails PRs that change kit hooks
 without re-running the installer) and suggests a CODEOWNERS entry for .claude/.
@@ -52,6 +55,10 @@ def main(argv):
     public = "--public-ci" in argv
     vendor = "--no-vendor" not in argv
     guard = "--with-guard" in argv
+    prq = next((argv[i + 1] for i, a in enumerate(argv) if a == "--pr-quality" and i + 1 < len(argv)), None)
+    if prq not in (None, "local", "ci"):
+        print("--pr-quality takes 'local' or 'ci'")
+        return 2
     cursor = "--cursor" in argv or (target / ".cursor").is_dir()
     profile = next((argv[i + 1] for i, a in enumerate(argv) if a == "--profile" and i + 1 < len(argv)), None)
     pf = target / ".claude/agent-kit/profile"
@@ -177,6 +184,16 @@ def main(argv):
         if not dry:
             pf.parent.mkdir(parents=True, exist_ok=True)
             pf.write_text(profile + "\n")
+    # 4b2. PR quality: template + config + script always; the CI workflow only with --pr-quality ci
+    if prq:
+        gh = SKILL_DIR / "assets/github"
+        put(gh / ("PULL_REQUEST_TEMPLATE.ci.md" if public else "PULL_REQUEST_TEMPLATE.md"), ".github/PULL_REQUEST_TEMPLATE.md", False)
+        put(gh / ("pr-quality.ci.json" if public else "pr-quality.json"), ".github/pr-quality.json", False)
+        put(gh / "pr_quality.py", ".github/scripts/pr_quality.py", True)
+        if prq == "ci":
+            put(gh / "pr-quality.yml", ".github/workflows/pr-quality.yml", True)
+        else:
+            log.append("note   pr-quality: local only (no workflow). Agents lint the PR body with .github/scripts/pr_quality.py; use --pr-quality ci to add the check")
     # 4c. rules for tools without hooks
     if cursor:
         put(SKILL_DIR / "templates/cursor-agent-kit.mdc", ".cursor/rules/agent-kit.mdc", True)
@@ -199,6 +216,10 @@ def main(argv):
             r = subprocess.run(["git", "-C", str(target), "check-ignore", "-q", rel], capture_output=True)
             if r.returncode == 0:
                 log.append(f"WARN   {rel} is git-ignored: add a '!{rel}' (or its folder) exception to .gitignore")
+    if not shutil.which("bash"):
+        log.append("WARN   bash not found on PATH: hooks need bash (Windows: Git for Windows' Git Bash, or WSL)")
+    if not (shutil.which("python3") or shutil.which("python")):
+        log.append("WARN   python3 not found on PATH: hooks fail open and the session banner will say they are inactive")
     print("\n".join(log) or "up to date")
     print(f"\nagent-kit {VERSION} -> {target}{' (dry run)' if dry else ''}")
     print("Next: fill {{PLACEHOLDERS}} (grep -rn '{{' AGENTS.md docs/agents/OWNER_DECISIONS.md); resolve every SKIP by hand.")

@@ -35,6 +35,7 @@ The owner opens sessions with a short, meeting-style message. Do not ask for a k
 Packet → QUALITY-G1 (surface + risk + tests designed first) → owner approval → small verified steps → QUALITY-G2 (evidence) → handoff.
 - One round = one root cause. Recurrence or second failure → skill `systematic-debug` and the rework ledger.
 - Before compaction or at session end, **replace** `{{HANDOFF_PATH}}` with the active state (template in `standard/HANDOFF-TEMPLATE.md`).
+- PRs: skill `pr-quality` (honest G1/G2 evidence; lint the description before opening).
 - Close every implementation with a test list for the owner: AUTOMATED vs PHYSICAL.
 - Weekly/5-hour usage high (the `usage-guard` hook says so) or tool switch → offer a continuation prompt (skill `baton-pass`).
 

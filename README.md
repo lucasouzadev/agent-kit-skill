@@ -18,6 +18,7 @@ It was distilled from several production repositories (web + BaaS, React Native,
 - **Evidence over claims.** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified; human approval gate before writes.
 - **Device lab in CI.** No Mac or spare phones? Workflow templates build and test on hosted emulators/simulators, package APK/TestFlight builds, publish Expo OTA and run Maestro — with a safe secret list and public-repo hardening.
 - **The approval gate is enforced, not just written.** A `PreToolUse` hook asks you before pushes to the default branch, deploys, store builds, CI dispatches, destructive SQL or secret reads, and blocks the catastrophic ones outright (seatbelt, not a sandbox; `ask` is not guaranteed in bypass modes).
+- **PR quality.** A template with QUALITY-G1/G2, a local linter and an optional check that fails PRs with unfilled evidence, `PASS` without proof, missing reasons, secrets or `pull_request_target` — and flags risky areas (workflows, hooks, migrations, dependencies, native shell, auth). It judges honesty and structure, not correctness.
 - **Pick your size.** `--profile lite` (7 skills) · `standard` (15) · `full`; fewer skills = fewer always-loaded tokens.
 - **Works beyond Claude Code.** Codex, Cursor and others get the same rules as plain text (`NO-HOOKS.md`, a Cursor rule); only the automation is Claude-specific.
 - **Measured, not assumed.** Local metrics (counts only, never prompt text): sessions, compactions, peak context, modes, baton offers, plus a git rework signal — `python3 .claude/agent-kit/metrics.py report`.
@@ -41,7 +42,7 @@ python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo       
 grep -rn '{{' /path/to/repo/AGENTS.md                                               # fill placeholders
 ```
 Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
-Options: `--profile lite|standard|full` · `--cursor` · `--with-guard` (CI guard for `.claude/` changes + CODEOWNERS hint) · `.claude/agent-kit/overrides` (`NAME.md=path`) when the project keeps its own version of a standard doc · `.claude/agent-kit/skip-skills` to opt out of a kit skill. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
+Options: `--pr-quality local|ci` · `--profile lite|standard|full` · `--cursor` · `--with-guard` (CI guard for `.claude/` changes + CODEOWNERS hint) · `.claude/agent-kit/overrides` (`NAME.md=path`) when the project keeps its own version of a standard doc · `.claude/agent-kit/skip-skills` to opt out of a kit skill. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
 
 ## Contents
 | Path | Role |
@@ -52,6 +53,7 @@ Options: `--profile lite|standard|full` · `--cursor` · `--with-guard` (CI guar
 | `skills/systematic-debug` | four-step root cause, two-attempt stop |
 | `skills/fundamentals-audit` | race, idempotency, client trust, separation, integration tests |
 | `skills/ux-check` | UX laws, states, a11y, responsiveness, UI performance |
+| `skills/pr-quality` | honest PRs: template, self-review, local lint, how to read the CI check |
 | `skills/handoff` | session state file |
 | `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time, agenda |
 | `skills/intent-compiler` | invisible talk → brief conversion before acting (rubric + examples) |

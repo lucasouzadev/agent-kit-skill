@@ -30,6 +30,8 @@ Principle: a short core loaded every session, everything else opened by task. Th
 | `.claude/skills/`, `.claude/output-styles/` | vendored copies (skip with `--no-vendor`) |
 
 ## Options
+- `--pr-quality local|ci`: PR template, `.github/pr-quality.json` and `.github/scripts/pr_quality.py` (agents lint the PR body offline); `ci` adds the check workflow. Choose `local` on private repos with scarce Actions minutes. Keep the project's own PR template if it has one (create-only) and mirror its headings in `pr-quality.json`.
+- Check for updates: `python3 .claude/agent-kit/update.py check` (explicit network call).
 - `--profile lite|standard|full`: how many kit skills to vendor (7 / 15 / all). Recommend **lite** to newcomers and small projects, **standard** for apps with real users, **full** when the project builds in CI. Remembered in `.claude/agent-kit/profile`.
 - `--cursor`: write `.cursor/rules/agent-kit.mdc` (automatic when `.cursor/` exists). Tools without hooks follow `docs/agents/standard/NO-HOOKS.md`.
 - `guard-allow` / `guard-extra` in `.claude/agent-kit/`: standing authorizations (e.g. `eas build .*simulator`) and project-specific risky commands for the `action-guard` hook.
