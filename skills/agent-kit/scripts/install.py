@@ -16,6 +16,8 @@ Safe updates: every file the kit writes is recorded with its hash in
 unchanged since the kit wrote it; files you edited are reported as SKIP.
 --no-vendor: use when the agent-kit plugin is installed (skills, output style and
 hooks come from the plugin; only docs, settings keys and templates are written).
+Opt out of a kit skill (e.g. the project has its own variant): list its name in
+.claude/agent-kit/skip-skills, one per line.
 """
 import hashlib
 import json
@@ -81,9 +83,11 @@ def main(argv):
         style = KIT_ROOT / "output-styles/caveman.md"
         if style.exists():
             put(style, ".claude/output-styles/caveman.md", True)
+        skip_file = target / ".claude/agent-kit/skip-skills"
+        skip = set(skip_file.read_text().split()) if skip_file.exists() else set()
         skills_root = KIT_ROOT / "skills"
         for sd in sorted(p for p in skills_root.iterdir() if p.is_dir() and p.name != "agent-kit"):
-            if public and sd.name in CI_SKIP_SKILLS:
+            if (public and sd.name in CI_SKIP_SKILLS) or sd.name in skip:
                 continue
             for f in sorted(sd.rglob("*")):
                 if f.is_file():
@@ -127,6 +131,13 @@ def main(argv):
     if not dry:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(json.dumps({"version": VERSION, "files": new}, indent=2) + "\n")
+    # 7. warn when git would not track the shared config (other sessions would never get it)
+    import subprocess
+    for rel in (".claude/settings.json", ".claude/agent-kit/session-context.sh", ".claude/output-styles/caveman.md", "AGENTS.md"):
+        if (target / rel).exists():
+            r = subprocess.run(["git", "-C", str(target), "check-ignore", "-q", rel], capture_output=True)
+            if r.returncode == 0:
+                log.append(f"WARN   {rel} is git-ignored: add a '!{rel}' (or its folder) exception to .gitignore")
     print("\n".join(log) or "up to date")
     print(f"\nagent-kit {VERSION} -> {target}{' (dry run)' if dry else ''}")
     print("Next: fill {{PLACEHOLDERS}} (grep -rn '{{' AGENTS.md docs/agents/OWNER_DECISIONS.md); resolve every SKIP by hand.")
