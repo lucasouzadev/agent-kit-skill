@@ -24,7 +24,8 @@
     "supply-chain",
     "performance-core",
     "platform-security",
-    "pr-quality"
+    "pr-quality",
+    "media-investigation"
   ],
   "full": "*"
 }

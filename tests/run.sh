@@ -162,6 +162,17 @@ node "$S/encrypt-artifact.mjs" "$T/b" "$T/b.enc" >/dev/null && node "$S/decrypt-
 python3 -c "import sys; p=sys.argv[1]; b=bytearray(open(p,'rb').read()); b[60]^=0xFF; open(p,'wb').write(b)" "$T/b.enc"
 node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.bad" >/dev/null 2>&1 && fail "tamper not detected"; pass "encryption"
 
+# media-investigation: frame extractor on a synthetic video
+if command -v ffmpeg >/dev/null 2>&1; then
+  ffmpeg -v error -y -f lavfi -i testsrc=duration=5:size=320x240:rate=10 "$T/v.mp4" || fail "test video"
+  FR="$ROOT/skills/media-investigation/scripts/frames.py"
+  fout="$(python3 "$FR" "$T/v.mp4" --out "$T/frames" --max 4)" || fail "frames.py failed"
+  [[ "$fout" == *"4 frames"* ]] || fail "frames.py frame count: $fout"
+  [[ -s "$T/frames/grid.jpg" && -s "$T/frames/frame-04.jpg" ]] || fail "frames.py outputs missing"
+  python3 "$FR" "$T/missing.mp4" >/dev/null 2>&1 && fail "frames.py accepted a missing file"
+  pass "media-investigation frames"
+else echo "SKIP media-investigation frames (ffmpeg not installed)"; fi
+
 # personal-data guard: no e-mails or home paths in shipped files
 if grep -rInE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(com|net|org|io|dev|br)\b|/home/[a-z]+|/Users/[A-Za-z]+' \
      --exclude-dir=.git --exclude=run.sh --exclude=CHANGELOG.md "$ROOT" | grep -vE 'noreply@|example\.com|@users\.noreply|git@github\.com'; then fail "personal data"; fi

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.8.0 — 2026-11-09
+- `media-investigation` skill: when the owner attaches media, the agent reads all of it (video via `scripts/frames.py` + ffmpeg: frame grid, timestamps), answers the question, then reports extra findings in a separate block (VISTO vs SUPOSTO, severity, evidence, max 7), read-only until approved; privacy and budget limits. Added to the `standard` profile and the `intent-compiler` skill list.
+
 ## 1.7.1 — 2026-11-08
 - Tests: the tamper check now flips a bit instead of writing a fixed byte (it missed the tamper ~1 in 256 runs, which is what failed CI the second time); background-logging checks wait for the event instead of a fixed `sleep 1`.
 - Fix: the kit's CI failed because the `actionlint` container ships `shellcheck` and flagged the shell inside the templates (my local run had no shellcheck). `ls | head` / unquoted globs / unquoted `$KID` in the iOS templates now use `find` and quotes; the CI guard loop no longer uses `ls | grep`. `actionlint` + `shellcheck` is clean on every template. CONTRIBUTING: run actionlint with shellcheck installed.
