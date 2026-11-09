@@ -23,6 +23,9 @@ def main():
                        capture_output=True, text=True)
     if r.returncode:
         sys.exit("not a git repository (or git missing)")
+    sh = subprocess.run(["git", "rev-parse", "--is-shallow-repository"], capture_output=True, text=True).stdout.strip()
+    if sh == "true":
+        print("note: shallow clone, counts are partial (git fetch --unshallow for the full history)")
     count = collections.Counter()
     for block in r.stdout.split("\x1e")[1:]:
         lines = block.strip().splitlines()

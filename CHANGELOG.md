@@ -9,6 +9,10 @@
   - `hotspots.py`: files with many fix commits (translations excluded as noise); a hotspot gets a regression test before another patch. Wired into `session-preflight` and `triage`.
   - `i18n_parity.py`: missing/extra translation keys across JSON locales (exit 1, never prints values). Wired into `ux-check` and `session-preflight`.
   - `triage` QA-round mode: stable IDs `R<round>.<n>`, retest and occurrence counters, second occurrence → `systematic-debug`, fixes grouped by shared cause.
+  - `pr-gate` PreToolUse hook: runs the repo's PR checker on the body before an agent opens/edits a PR (GitHub MCP or `gh pr create/edit --body-file`); hard failures block, warnings pass, no checker → allow. `--pr-quality local` is now enforced, not advisory.
+  - `CANARY.md`: choose a word that appears nowhere in the repos; the agent may check once and suggest another.
+  - `hotspots.py` warns on shallow clones (cloud sessions) instead of under-counting silently.
+  - Tests: README must list every skill; lite count follows `profiles.json`.
   - `pr_quality.py`: new "Generated / synced files" area (native sync output, Pods, build output, Xcode user state).
 
 ## 1.7.1 — 2026-11-08

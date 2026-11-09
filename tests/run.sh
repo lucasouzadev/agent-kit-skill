@@ -167,6 +167,18 @@ node "$S/encrypt-artifact.mjs" "$T/b" "$T/b.enc" >/dev/null && node "$S/decrypt-
 python3 -c "import sys; p=sys.argv[1]; b=bytearray(open(p,'rb').read()); b[60]^=0xFF; open(p,'wb').write(b)" "$T/b.enc"
 node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.bad" >/dev/null 2>&1 && fail "tamper not detected"; pass "encryption"
 
+# pr-gate: blocks a PR body that fails the repo checker, allows a good one and unrelated tools
+PG="$T/pg"; mkdir -p "$PG/.github/scripts"; cp "$KIT/assets/github/pr_quality.py" "$PG/.github/scripts/"; cp "$KIT/assets/github/pr-quality.json" "$PG/.github/"
+pgo() { python3 -c 'import json,sys; print(json.dumps({"tool_name":sys.argv[1],"cwd":sys.argv[2],"tool_input":{"body":open(sys.argv[3]).read(),"repo":"x"}}))' "$1" "$PG" "$2" | CLAUDE_PROJECT_DIR="$PG" bash "$A/pr-gate.sh"; }
+printf '## Summary\nx\n' > "$T/badpr.md"
+o="$(pgo mcp__github__create_pull_request "$T/badpr.md")"; [[ "$o" == *'"deny"'* ]] || fail "pr-gate let a bad PR through: $o"
+[[ "$o" != *"## Summary"* ]] || fail "pr-gate echoed the body"
+o="$(pgo mcp__github__create_pull_request "$T/good.md")"; [ -z "$o" ] || fail "pr-gate blocked a good PR: $o"
+o="$(pgo Read "$T/badpr.md")"; [ -z "$o" ] || fail "pr-gate reacted to another tool"
+o="$(printf '{"tool_name":"Bash","cwd":"%s","tool_input":{"command":"gh pr create --body-file %s"}}' "$PG" "$T/badpr.md" | CLAUDE_PROJECT_DIR="$PG" bash "$A/pr-gate.sh")"; [[ "$o" == *'"deny"'* ]] || fail "pr-gate missed gh pr create: $o"
+rm -rf "$PG/.github/scripts"; o="$(pgo mcp__github__create_pull_request "$T/badpr.md")"; [ -z "$o" ] || fail "pr-gate should allow when the repo has no checker"
+pass "pr-gate"
+
 # hotspots + i18n parity
 H="$T/hot"; mkdir -p "$H" && ( cd "$H" && git init -q && git config user.email t@example.com && git config user.name t
   for i in 1 2 3; do echo "$i" >> a.ts; git add a.ts; git commit -qm "fix: a broke again $i"; done
@@ -190,6 +202,10 @@ if command -v ffmpeg >/dev/null 2>&1; then
   python3 "$FR" "$T/missing.mp4" >/dev/null 2>&1 && fail "frames.py accepted a missing file"
   pass "media-investigation frames"
 else echo "SKIP media-investigation frames (ffmpeg not installed)"; fi
+
+# docs stay in sync with the skills folder
+for s in "$ROOT"/skills/*/; do n="$(basename "$s")"; [ "$n" = agent-kit ] && continue; grep -qE "\`(skills/)?$n\`" "$ROOT/README.md" || fail "README does not list skill $n"; done
+pass "README lists every skill"
 
 # personal-data guard: no e-mails or home paths in shipped files
 if grep -rInE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(com|net|org|io|dev|br)\b|/home/[a-z]+|/Users/[A-Za-z]+' \
