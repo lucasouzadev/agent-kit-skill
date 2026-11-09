@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.8.0 — 2026-11-09
+- `media-investigation` skill: when the owner attaches media, the agent reads all of it (video via `scripts/frames.py` + ffmpeg: frame grid, timestamps), answers the question, then reports extra findings in a separate block (SEEN vs INFERRED, severity, evidence, max 7), read-only until approved; privacy and budget limits. Media the owner attached but did not mention is analyzed anyway and cited explicitly.
+- `triage` skill: several asks at once become a prioritized list (risk first, quick wins batched by area, large items get 2–3 spec/plan options, parked items with their blocking question).
+- `intent-brief` hook: hints `media-investigation` when images/videos are attached (`[Image #N]` or media paths) and `triage` when the message lists 3+ items; counts only, never echoes text.
+- Both skills are in the `lite` and `standard` profiles.
+- From the owner's git history (rework hotspots, translation churn, reverts of stray files, device QA rounds):
+  - `hotspots.py`: files with many fix commits (translations excluded as noise); a hotspot gets a regression test before another patch. Wired into `session-preflight` and `triage`.
+  - `i18n_parity.py`: missing/extra translation keys across JSON locales (exit 1, never prints values). Wired into `ux-check` and `session-preflight`.
+  - `triage` QA-round mode: stable IDs `R<round>.<n>`, retest and occurrence counters, second occurrence → `systematic-debug`, fixes grouped by shared cause.
+  - `pr-gate` PreToolUse hook: runs the repo's PR checker on the body before an agent opens/edits a PR (GitHub MCP or `gh pr create/edit --body-file`); hard failures block, warnings pass, no checker → allow. `--pr-quality local` is now enforced, not advisory.
+  - `CANARY.md`: choose a word that appears nowhere in the repos; the agent may check once and suggest another.
+  - `hotspots.py` warns on shallow clones (cloud sessions) instead of under-counting silently.
+  - Tests: README must list every skill; lite count follows `profiles.json`.
+  - `pr_quality.py`: new "Generated / synced files" area (native sync output, Pods, build output, Xcode user state).
+
 ## 1.7.1 — 2026-11-08
 - Tests: the tamper check now flips a bit instead of writing a fixed byte (it missed the tamper ~1 in 256 runs, which is what failed CI the second time); background-logging checks wait for the event instead of a fixed `sleep 1`.
 - Fix: the kit's CI failed because the `actionlint` container ships `shellcheck` and flagged the shell inside the templates (my local run had no shellcheck). `ls | head` / unquoted globs / unquoted `$KID` in the iOS templates now use `find` and quotes; the CI guard loop no longer uses `ls | grep`. `actionlint` + `shellcheck` is clean on every template. CONTRIBUTING: run actionlint with shellcheck installed.

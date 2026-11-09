@@ -16,14 +16,14 @@ ACCEPTANCE  how we both know it is done, in numbers or visible behaviour
 CONSTRAINTS AGENTS.md rules that apply (approval gate, build/release rules, design system, security)
 OUT OF SCOPE what not to touch, even if tempting
 MODE        Fixer | Builder | Product | Architect | Lens | Auditor | Status
-SKILLS      the 1–3 skills/docs to load (e.g. systematic-debug, ux-check, security-core)
+SKILLS      the 1–3 skills/docs to load (e.g. systematic-debug, ux-check, security-core); media attached → media-investigation; 3+ asks or a list → triage
 UNKNOWNS    only what changes the result and the repo cannot answer → at most ONE question
 OUTPUT      what the owner gets back: plan for approval | answer | status | evidence
 ```
 
 ## Then act on the brief
 - Enough to act → do the next step (the approval gate still applies before any write).
-- One blocking unknown → ask it as a multiple-choice question, recommendation first. Fill everything else with stated defaults ("assumi X; se não, diga").
+- One blocking unknown → ask it as a multiple-choice question, recommendation first. Fill everything else with stated defaults ("I assumed X; say if not", in the owner's language).
 - Restate only GOAL + ACCEPTANCE to the owner, in one line, when the task is non-trivial. The rest of the brief stays invisible.
 - The brief is not stored in files; GOAL + ACCEPTANCE + approvals go to the handoff when the session closes.
 

@@ -6,7 +6,9 @@
     "handoff",
     "baton-pass",
     "systematic-debug",
-    "security-core"
+    "security-core",
+    "triage",
+    "media-investigation"
   ],
   "standard": [
     "caveman",
@@ -24,7 +26,9 @@
     "supply-chain",
     "performance-core",
     "platform-security",
-    "pr-quality"
+    "pr-quality",
+    "media-investigation",
+    "triage"
   ],
   "full": "*"
 }

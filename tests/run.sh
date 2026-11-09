@@ -76,7 +76,7 @@ python3 -c "import json;d=json.load(open('$P/.claude/settings.json'))['hooks']['
 # profiles + cursor + no-hooks
 L="$T/lite"; mkdir -p "$L" && git -C "$L" init -q
 python3 "$KIT/scripts/install.py" "$L" --profile lite --cursor >/dev/null
-[ "$(ls "$L/.claude/skills" | wc -l)" = 7 ] || fail "lite profile should vendor 7 skills"
+[ "$(ls "$L/.claude/skills" | wc -l)" = "$(python3 -c "import json;print(len(json.load(open('$KIT/profiles.json'))['lite']))")" ] || fail "lite profile vendors exactly its profile list"
 [ -f "$L/.cursor/rules/agent-kit.mdc" ] && [ -f "$L/docs/agents/standard/NO-HOOKS.md" ] || fail "cursor rule / NO-HOOKS"
 [ "$(python3 "$KIT/scripts/install.py" "$L" | grep -cE '^(write|merge)')" = 0 ] || fail "profile not remembered"
 python3 "$KIT/scripts/install.py" "$L" --profile nonsense >/dev/null 2>&1 && fail "bad profile accepted"
@@ -94,7 +94,10 @@ chm "continua de onde parou" Continue; chm "seguimos con el plan" Continue; chm 
 chm "queria exportar as notas" Product; chm "i want a dark mode screen" Product; chm "agrega un botón de compartir" Builder; chm "add a share button" Builder
 chm "is it safe to retry the webhook" Auditor; chm "otimizar a arquitetura do banco" Architect; chm "bom dia time" unknown
 [ -z "$(mm "vale")" ] && [ -z "$(mm "pode")" ] || fail "acks must be silent"
-pass "intent modes en/pt/es + unknown"
+o="$(printf '%s' '{"session_id":"s","prompt":"olha isso [Image #1] e o video.mp4"}' | bash "$A/intent-brief.sh")"; [[ "$o" == *"Media attached (2)"* ]] || fail "intent-brief media hint: $o"
+o="$(printf '%s' '{"session_id":"s","prompt":"ajustes:\n- botao\n- cor\n- texto"}' | bash "$A/intent-brief.sh")"; [[ "$o" == *"lists 3 items"*"triage"* ]] || fail "intent-brief triage hint: $o"
+o="$(printf '%s' '{"session_id":"s","prompt":"o login quebrou"}' | bash "$A/intent-brief.sh")"; [[ "$o" != *"Media attached"* && "$o" != *"triage"* ]] || fail "intent-brief false hints"
+pass "intent modes en/pt/es + unknown + media/list hints"
 
 # no-python fallback: hooks fail open and the session banner warns
 B="$T/nopybin"; mkdir -p "$B"; for c in bash dirname cat head sed git wc tr ls grep cmp mkdir date cksum cut; do p="$(command -v $c)" && ln -sf "$p" "$B/$c"; done
@@ -150,7 +153,9 @@ out="$(cd "$G" && pqo --body-file "$T/good.md" --git-base main --config "$Q/pr-q
 PRP="$T/prq"; mkdir -p "$PRP" && git -C "$PRP" init -q && python3 "$KIT/scripts/install.py" "$PRP" --pr-quality ci >/dev/null
 for f in .github/PULL_REQUEST_TEMPLATE.md .github/pr-quality.json .github/scripts/pr_quality.py .github/workflows/pr-quality.yml; do [ -f "$PRP/$f" ] || fail "pr-quality install: $f"; done
 python3 "$KIT/scripts/install.py" "$PRP" --pr-quality ci | grep -qE '^(write|merge)' && fail "pr-quality install not idempotent"
-pass "pr-quality (checks, rules, bots, git mode, installer)"
+echo '[{"filename":"ios/App/App/public/index.html","additions":1,"deletions":0,"patch":"+x\n"}]' > "$T/f9.json"
+[[ "$(pqo --body-file "$T/good.md" --files-json "$T/f9.json" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"Generated / synced"* ]] || fail "generated files not flagged"
+pass "pr-quality (checks, rules, bots, git mode, installer, generated files)"
 
 # static validation of workflow templates with actionlint when available
 if command -v actionlint >/dev/null 2>&1; then actionlint -color=false "$ROOT"/skills/ci-device-lab/templates/workflows/*.yml "$Q"/*.yml "$ROOT"/.github/workflows/*.yml || fail "actionlint"; pass "actionlint"; else echo "SKIP actionlint (not installed; CI runs it)"; fi
@@ -161,6 +166,50 @@ export ARTIFACT_PASSPHRASE=0123456789abcdefghijklmnopqrstuv
 node "$S/encrypt-artifact.mjs" "$T/b" "$T/b.enc" >/dev/null && node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.out" >/dev/null && cmp -s "$T/b" "$T/b.out" || fail "encryption round-trip"
 python3 -c "import sys; p=sys.argv[1]; b=bytearray(open(p,'rb').read()); b[60]^=0xFF; open(p,'wb').write(b)" "$T/b.enc"
 node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.bad" >/dev/null 2>&1 && fail "tamper not detected"; pass "encryption"
+
+# pr-gate: blocks a PR body that fails the repo checker, allows a good one and unrelated tools
+PG="$T/pg"; mkdir -p "$PG/.github/scripts"; cp "$KIT/assets/github/pr_quality.py" "$PG/.github/scripts/"; cp "$KIT/assets/github/pr-quality.json" "$PG/.github/"
+pgo() { python3 -c 'import json,sys; print(json.dumps({"tool_name":sys.argv[1],"cwd":sys.argv[2],"tool_input":{"body":open(sys.argv[3]).read(),"repo":"x"}}))' "$1" "$PG" "$2" | CLAUDE_PROJECT_DIR="$PG" bash "$A/pr-gate.sh"; }
+printf '## Summary\nx\n' > "$T/badpr.md"
+o="$(pgo mcp__github__create_pull_request "$T/badpr.md")"; [[ "$o" == *'"deny"'* ]] || fail "pr-gate let a bad PR through: $o"
+[[ "$o" != *"## Summary"* ]] || fail "pr-gate echoed the body"
+o="$(pgo mcp__github__create_pull_request "$T/good.md")"; [ -z "$o" ] || fail "pr-gate blocked a good PR: $o"
+o="$(pgo Read "$T/badpr.md")"; [ -z "$o" ] || fail "pr-gate reacted to another tool"
+o="$(printf '{"tool_name":"Bash","cwd":"%s","tool_input":{"command":"gh pr create --body-file %s"}}' "$PG" "$T/badpr.md" | CLAUDE_PROJECT_DIR="$PG" bash "$A/pr-gate.sh")"; [[ "$o" == *'"deny"'* ]] || fail "pr-gate missed gh pr create: $o"
+rm -rf "$PG/.github/scripts"; o="$(pgo mcp__github__create_pull_request "$T/badpr.md")"; [ -z "$o" ] || fail "pr-gate should allow when the repo has no checker"
+pass "pr-gate"
+
+# hotspots + i18n parity
+H="$T/hot"; mkdir -p "$H" && ( cd "$H" && git init -q && git config user.email t@example.com && git config user.name t
+  for i in 1 2 3; do echo "$i" >> a.ts; git add a.ts; git commit -qm "fix: a broke again $i"; done
+  echo x > b.ts; git add b.ts; git commit -qm "feat: b" )
+ho="$(cd "$H" && python3 "$KIT/assets/claude/hotspots.py")"; [[ "$ho" == *"3  a.ts"* && "$ho" != *"b.ts"* ]] || fail "hotspots: $ho"
+mkdir -p "$T/loc/locales/en" "$T/loc/locales/pt-BR"
+echo '{"a":{"b":"x","c":"y"}}' > "$T/loc/locales/en/common.json"; echo '{"a":{"b":"x","c":"y"}}' > "$T/loc/locales/pt-BR/common.json"
+python3 "$KIT/assets/claude/i18n_parity.py" "$T/loc" >/dev/null || fail "i18n parity false alarm"
+echo '{"a":{"b":"segredo"}}' > "$T/loc/locales/pt-BR/common.json"
+io="$(python3 "$KIT/assets/claude/i18n_parity.py" "$T/loc")" && fail "i18n parity missed a key"
+[[ "$io" == *"missing a.c"* && "$io" != *"segredo"* ]] || fail "i18n parity output: $io"
+pass "hotspots + i18n parity"
+
+# media-investigation: frame extractor on a synthetic video
+if command -v ffmpeg >/dev/null 2>&1; then
+  ffmpeg -v error -y -f lavfi -i testsrc=duration=5:size=320x240:rate=10 "$T/v.mp4" || fail "test video"
+  FR="$ROOT/skills/media-investigation/scripts/frames.py"
+  fout="$(python3 "$FR" "$T/v.mp4" --out "$T/frames" --max 4)" || fail "frames.py failed"
+  [[ "$fout" == *"4 frames"* ]] || fail "frames.py frame count: $fout"
+  [[ -s "$T/frames/grid.jpg" && -s "$T/frames/frame-04.jpg" ]] || fail "frames.py outputs missing"
+  python3 "$FR" "$T/missing.mp4" >/dev/null 2>&1 && fail "frames.py accepted a missing file"
+  pass "media-investigation frames"
+else echo "SKIP media-investigation frames (ffmpeg not installed)"; fi
+
+# docs stay in sync with the skills folder
+for s in "$ROOT"/skills/*/; do n="$(basename "$s")"; [ "$n" = agent-kit ] && continue; grep -qE "\`(skills/)?$n\`" "$ROOT/README.md" || fail "README does not list skill $n"; done
+pass "README lists every skill"
+
+# open-source neutrality: kit-authored skill text stays in English (owner language comes from AGENTS.md)
+if grep -nE "\b(você|não|pediu|Achei|VISTO|SUPOSTO|Parado|Precisam|sobrou)\b" "$ROOT"/skills/media-investigation/SKILL.md "$ROOT"/skills/triage/SKILL.md; then fail "Portuguese output labels in kit skills"; fi
+pass "skills language-neutral"
 
 # personal-data guard: no e-mails or home paths in shipped files
 if grep -rInE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(com|net|org|io|dev|br)\b|/home/[a-z]+|/Users/[A-Za-z]+' \

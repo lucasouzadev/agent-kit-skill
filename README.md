@@ -53,6 +53,8 @@ Options: `--pr-quality local|ci` · `--profile lite|standard|full` · `--cursor`
 | `skills/systematic-debug` | four-step root cause, two-attempt stop |
 | `skills/fundamentals-audit` | race, idempotency, client trust, separation, integration tests |
 | `skills/ux-check` | UX laws, states, a11y, responsiveness, UI performance |
+| `skills/media-investigation` | attached screenshots/videos: read all of it, answer, then report extra findings (read-only) |
+| `skills/triage` | many asks at once → prioritized list: risk first, quick wins batched, large items get spec/plan options |
 | `skills/pr-quality` | honest PRs: template, self-review, local lint, how to read the CI check |
 | `skills/handoff` | session state file |
 | `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time, agenda |
