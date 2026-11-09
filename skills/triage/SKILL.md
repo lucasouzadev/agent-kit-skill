@@ -8,7 +8,7 @@ description: Turns a message with several asks (a list, a QA round, feedback wit
 The owner sends everything at once, in the order it came to mind. You turn it into the order it should be **done**.
 
 ## 1. Split
-One line per distinct ask, in the owner's words (short). Merge duplicates; split items that hide two changes. Include asks from attached media (skill `media-investigation`) and from the handoff "sobrou" list if the owner says "e o resto".
+One line per distinct ask, in the owner's words (short). Merge duplicates; split items that hide two changes. Include asks from attached media (skill `media-investigation`) and from the handoff leftovers list if the owner says "and the rest".
 
 ## 2. Size and score each item
 | Field | Values |
@@ -24,12 +24,12 @@ One line per distinct ask, in the owner's words (short). Merge duplicates; split
 3. **Large items:** for each L (and M with a decision), do not start coding. Offer 2–3 options (smallest viable, recommended, ideal) with cost and risk; recommend one; when approved, write a short spec/plan (project template, task contract) before code.
 4. **Parked:** unclear, out of scope or blocked items, each with the single question that unblocks it.
 
-## 4. Present (caveman, ≤ 15 lines)
+## 4. Present (caveman, ≤ 15 lines, owner's language)
 ```
-Agora (rápidos, 1 lote): #2 #5 #6 — ~40 min, 1 rodada de teste
-Antes deles: #4 (risco: vaza dado)
-Precisam de decisão: #1 → A) mínimo  B) recomendado  C) ideal
-Parado: #3 — falta saber X
+Now (quick, one batch): #2 #5 #6 — ~40 min, one test run
+Before those: #4 (risk: data leak)
+Need a decision: #1 → A) minimal  B) recommended  C) ideal
+Parked: #3 — missing X
 ```
 Then ask **one** question: approve the order (and the option for each L). The approval gate still applies before writes; an approved order is recorded in the handoff with the IDs.
 

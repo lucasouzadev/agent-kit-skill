@@ -23,7 +23,7 @@ OUTPUT      what the owner gets back: plan for approval | answer | status | evid
 
 ## Then act on the brief
 - Enough to act → do the next step (the approval gate still applies before any write).
-- One blocking unknown → ask it as a multiple-choice question, recommendation first. Fill everything else with stated defaults ("assumi X; se não, diga").
+- One blocking unknown → ask it as a multiple-choice question, recommendation first. Fill everything else with stated defaults ("I assumed X; say if not", in the owner's language).
 - Restate only GOAL + ACCEPTANCE to the owner, in one line, when the task is non-trivial. The rest of the brief stays invisible.
 - The brief is not stored in files; GOAL + ACCEPTANCE + approvals go to the handoff when the session closes.
 

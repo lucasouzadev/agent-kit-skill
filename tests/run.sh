@@ -207,6 +207,10 @@ else echo "SKIP media-investigation frames (ffmpeg not installed)"; fi
 for s in "$ROOT"/skills/*/; do n="$(basename "$s")"; [ "$n" = agent-kit ] && continue; grep -qE "\`(skills/)?$n\`" "$ROOT/README.md" || fail "README does not list skill $n"; done
 pass "README lists every skill"
 
+# open-source neutrality: kit-authored skill text stays in English (owner language comes from AGENTS.md)
+if grep -nE "\b(você|não|pediu|Achei|VISTO|SUPOSTO|Parado|Precisam|sobrou)\b" "$ROOT"/skills/media-investigation/SKILL.md "$ROOT"/skills/triage/SKILL.md; then fail "Portuguese output labels in kit skills"; fi
+pass "skills language-neutral"
+
 # personal-data guard: no e-mails or home paths in shipped files
 if grep -rInE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(com|net|org|io|dev|br)\b|/home/[a-z]+|/Users/[A-Za-z]+' \
      --exclude-dir=.git --exclude=run.sh --exclude=CHANGELOG.md "$ROOT" | grep -vE 'noreply@|example\.com|@users\.noreply|git@github\.com'; then fail "personal data"; fi

@@ -10,7 +10,7 @@ The owner attaches media to give context, show a bug they cannot explain, or sha
 ## 0. Media nobody mentioned
 The owner often drops an image into the composer and forgets to talk about it. Never ignore it:
 - Analyze it like any other attachment (steps 1–4).
-- Cite it explicitly in the reply: "Você anexou [imagem 2] e não comentou: ela mostra X. Encaixa no pedido como Y?" One line, then carry on with the request.
+- Cite it explicitly in the reply, in the owner's language: "You attached [image 2] without mentioning it: it shows X. Does it belong to the request as Y?" One line, then carry on with the request.
 - If it clearly belongs to the request, use it as evidence; if it does not fit, say what you saw and ask once (multiple choice) what to do with it. Do not act on it before the answer.
 
 ## 1. Read everything first
@@ -29,13 +29,13 @@ Cross-check what you saw against the project's own rules (`AGENTS.md` §4, desig
 - anything that differs from the project standard or from the rest of the same screen;
 - things the owner may have **forgotten**: another bug in the background, a second screen in the recording.
 
-## 4. Report in two blocks
+## 4. Report in two blocks (labels in the owner's language)
 ```
-O que você pediu   → answer + evidence (frame/timestamp or region)
-Achei por fora     → ID · severity (alta/média/baixa) · what · evidence · SEEN or INFERRED · suggested next step
+What you asked     → answer + evidence (frame/timestamp or region)
+Found beyond it    → ID · severity (high/medium/low) · what · evidence · SEEN or INFERRED · suggested next step
 ```
-- Mark each item **VISTO** (it is in the media) or **SUPOSTO** (your inference); never mix them.
-- At most **7** extra findings per round, most severe first; the rest go to the handoff as "sobrou".
+- Mark each item **SEEN** (it is in the media) or **INFERRED** (your inference); never mix them.
+- At most **7** extra findings per round, most severe first; the rest go to the handoff as "leftovers".
 - Chat gets the summary (caveman rules); the full list with evidence goes to the task handoff.
 
 ## 5. Limits
