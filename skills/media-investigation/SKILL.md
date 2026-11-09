@@ -1,11 +1,17 @@
 ---
 name: media-investigation
-description: Standard investigation when the owner attaches media (screenshot, photo, screen recording, video, design reference, bug footage). Read all of it, not just what the owner pointed at, cross-check it against the project's rules, and report extra findings separately without changing anything. Use whenever a message includes an image or video, or a file path to one.
+description: Standard investigation when the owner attaches media (screenshot, photo, screen recording, video, design reference, bug footage). Read all of it, not just what the owner pointed at, cross-check it against the project's rules, and report extra findings separately without changing anything. Use whenever a message includes an image or video or a path to one, including media the owner attached but never mentioned.
 ---
 
 # Media investigation
 
 The owner attaches media to give context, show a bug they cannot explain, or share a reference. They describe **part** of what is there. Your job is to see **all** of it, then report what they did not mention. Investigate read-only: findings go to the report, never straight into code.
+
+## 0. Media nobody mentioned
+The owner often drops an image into the composer and forgets to talk about it. Never ignore it:
+- Analyze it like any other attachment (steps 1–4).
+- Cite it explicitly in the reply: "Você anexou [imagem 2] e não comentou: ela mostra X. Encaixa no pedido como Y?" One line, then carry on with the request.
+- If it clearly belongs to the request, use it as evidence; if it does not fit, say what you saw and ask once (multiple choice) what to do with it. Do not act on it before the answer.
 
 ## 1. Read everything first
 - **Image:** read every visible text, state (loading, empty, error, disabled), alignment, truncation, language, theme, device chrome (time, battery, keyboard, safe areas). Note what is cut off or hidden.

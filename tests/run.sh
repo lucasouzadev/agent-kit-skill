@@ -76,7 +76,7 @@ python3 -c "import json;d=json.load(open('$P/.claude/settings.json'))['hooks']['
 # profiles + cursor + no-hooks
 L="$T/lite"; mkdir -p "$L" && git -C "$L" init -q
 python3 "$KIT/scripts/install.py" "$L" --profile lite --cursor >/dev/null
-[ "$(ls "$L/.claude/skills" | wc -l)" = 7 ] || fail "lite profile should vendor 7 skills"
+[ "$(ls "$L/.claude/skills" | wc -l)" = "$(python3 -c "import json;print(len(json.load(open('$KIT/profiles.json'))['lite']))")" ] || fail "lite profile vendors exactly its profile list"
 [ -f "$L/.cursor/rules/agent-kit.mdc" ] && [ -f "$L/docs/agents/standard/NO-HOOKS.md" ] || fail "cursor rule / NO-HOOKS"
 [ "$(python3 "$KIT/scripts/install.py" "$L" | grep -cE '^(write|merge)')" = 0 ] || fail "profile not remembered"
 python3 "$KIT/scripts/install.py" "$L" --profile nonsense >/dev/null 2>&1 && fail "bad profile accepted"
@@ -94,7 +94,10 @@ chm "continua de onde parou" Continue; chm "seguimos con el plan" Continue; chm 
 chm "queria exportar as notas" Product; chm "i want a dark mode screen" Product; chm "agrega un botón de compartir" Builder; chm "add a share button" Builder
 chm "is it safe to retry the webhook" Auditor; chm "otimizar a arquitetura do banco" Architect; chm "bom dia time" unknown
 [ -z "$(mm "vale")" ] && [ -z "$(mm "pode")" ] || fail "acks must be silent"
-pass "intent modes en/pt/es + unknown"
+o="$(printf '%s' '{"session_id":"s","prompt":"olha isso [Image #1] e o video.mp4"}' | bash "$A/intent-brief.sh")"; [[ "$o" == *"Media attached (2)"* ]] || fail "intent-brief media hint: $o"
+o="$(printf '%s' '{"session_id":"s","prompt":"ajustes:\n- botao\n- cor\n- texto"}' | bash "$A/intent-brief.sh")"; [[ "$o" == *"lists 3 items"*"triage"* ]] || fail "intent-brief triage hint: $o"
+o="$(printf '%s' '{"session_id":"s","prompt":"o login quebrou"}' | bash "$A/intent-brief.sh")"; [[ "$o" != *"Media attached"* && "$o" != *"triage"* ]] || fail "intent-brief false hints"
+pass "intent modes en/pt/es + unknown + media/list hints"
 
 # no-python fallback: hooks fail open and the session banner warns
 B="$T/nopybin"; mkdir -p "$B"; for c in bash dirname cat head sed git wc tr ls grep cmp mkdir date cksum cut; do p="$(command -v $c)" && ln -sf "$p" "$B/$c"; done

@@ -1,7 +1,10 @@
 # Changelog
 
 ## 1.8.0 — 2026-11-09
-- `media-investigation` skill: when the owner attaches media, the agent reads all of it (video via `scripts/frames.py` + ffmpeg: frame grid, timestamps), answers the question, then reports extra findings in a separate block (VISTO vs SUPOSTO, severity, evidence, max 7), read-only until approved; privacy and budget limits. Added to the `standard` profile and the `intent-compiler` skill list.
+- `media-investigation` skill: when the owner attaches media, the agent reads all of it (video via `scripts/frames.py` + ffmpeg: frame grid, timestamps), answers the question, then reports extra findings in a separate block (VISTO vs SUPOSTO, severity, evidence, max 7), read-only until approved; privacy and budget limits. Media the owner attached but did not mention is analyzed anyway and cited explicitly.
+- `triage` skill: several asks at once become a prioritized list (risk first, quick wins batched by area, large items get 2–3 spec/plan options, parked items with their blocking question).
+- `intent-brief` hook: hints `media-investigation` when images/videos are attached (`[Image #N]` or media paths) and `triage` when the message lists 3+ items; counts only, never echoes text.
+- Both skills are in the `lite` and `standard` profiles.
 
 ## 1.7.1 — 2026-11-08
 - Tests: the tamper check now flips a bit instead of writing a fixed byte (it missed the tamper ~1 in 256 runs, which is what failed CI the second time); background-logging checks wait for the event instead of a fixed `sleep 1`.
