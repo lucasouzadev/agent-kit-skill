@@ -33,6 +33,14 @@ Parado: #3 — falta saber X
 ```
 Then ask **one** question: approve the order (and the option for each L). The approval gate still applies before writes; an approved order is recorded in the handoff with the IDs.
 
+## QA rounds on a device
+When the list is the owner's device QA ("rodada", "round", "retest"):
+- Give each item a stable ID `R<round>.<n>`; keep it across retests and record `retest N` and `occurrence N`.
+- Second occurrence of the same symptom → skill `systematic-debug` and the project rework ledger, not another patch.
+- Before fixing, run `.claude/agent-kit/hotspots.py <files>`: a hotspot (many earlier fix commits) gets a regression test first.
+- Group items by **shared cause**, not by screen; one cause fixed = several IDs closed, each with its own evidence.
+- Close the round with: fixed (evidence) / still open / needs device (the owner's physical test list).
+
 ## 5. While executing
 - Close quick wins in one batch, one commit per logical change, evidence per item (PASS/FAIL/BLOCKED).
 - Re-triage when something new arrives or an item turns out bigger than its size (say so; do not silently grow an XS into an L).

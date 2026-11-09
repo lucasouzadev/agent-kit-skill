@@ -5,6 +5,11 @@
 - `triage` skill: several asks at once become a prioritized list (risk first, quick wins batched by area, large items get 2–3 spec/plan options, parked items with their blocking question).
 - `intent-brief` hook: hints `media-investigation` when images/videos are attached (`[Image #N]` or media paths) and `triage` when the message lists 3+ items; counts only, never echoes text.
 - Both skills are in the `lite` and `standard` profiles.
+- From the owner's git history (rework hotspots, translation churn, reverts of stray files, device QA rounds):
+  - `hotspots.py`: files with many fix commits (translations excluded as noise); a hotspot gets a regression test before another patch. Wired into `session-preflight` and `triage`.
+  - `i18n_parity.py`: missing/extra translation keys across JSON locales (exit 1, never prints values). Wired into `ux-check` and `session-preflight`.
+  - `triage` QA-round mode: stable IDs `R<round>.<n>`, retest and occurrence counters, second occurrence → `systematic-debug`, fixes grouped by shared cause.
+  - `pr_quality.py`: new "Generated / synced files" area (native sync output, Pods, build output, Xcode user state).
 
 ## 1.7.1 — 2026-11-08
 - Tests: the tamper check now flips a bit instead of writing a fixed byte (it missed the tamper ~1 in 256 runs, which is what failed CI the second time); background-logging checks wait for the event instead of a fixed `sleep 1`.

@@ -153,7 +153,9 @@ out="$(cd "$G" && pqo --body-file "$T/good.md" --git-base main --config "$Q/pr-q
 PRP="$T/prq"; mkdir -p "$PRP" && git -C "$PRP" init -q && python3 "$KIT/scripts/install.py" "$PRP" --pr-quality ci >/dev/null
 for f in .github/PULL_REQUEST_TEMPLATE.md .github/pr-quality.json .github/scripts/pr_quality.py .github/workflows/pr-quality.yml; do [ -f "$PRP/$f" ] || fail "pr-quality install: $f"; done
 python3 "$KIT/scripts/install.py" "$PRP" --pr-quality ci | grep -qE '^(write|merge)' && fail "pr-quality install not idempotent"
-pass "pr-quality (checks, rules, bots, git mode, installer)"
+echo '[{"filename":"ios/App/App/public/index.html","additions":1,"deletions":0,"patch":"+x\n"}]' > "$T/f9.json"
+[[ "$(pqo --body-file "$T/good.md" --files-json "$T/f9.json" --config "$Q/pr-quality.json" --summary-file /dev/null)" == *"Generated / synced"* ]] || fail "generated files not flagged"
+pass "pr-quality (checks, rules, bots, git mode, installer, generated files)"
 
 # static validation of workflow templates with actionlint when available
 if command -v actionlint >/dev/null 2>&1; then actionlint -color=false "$ROOT"/skills/ci-device-lab/templates/workflows/*.yml "$Q"/*.yml "$ROOT"/.github/workflows/*.yml || fail "actionlint"; pass "actionlint"; else echo "SKIP actionlint (not installed; CI runs it)"; fi
@@ -164,6 +166,19 @@ export ARTIFACT_PASSPHRASE=0123456789abcdefghijklmnopqrstuv
 node "$S/encrypt-artifact.mjs" "$T/b" "$T/b.enc" >/dev/null && node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.out" >/dev/null && cmp -s "$T/b" "$T/b.out" || fail "encryption round-trip"
 python3 -c "import sys; p=sys.argv[1]; b=bytearray(open(p,'rb').read()); b[60]^=0xFF; open(p,'wb').write(b)" "$T/b.enc"
 node "$S/decrypt-artifact.mjs" "$T/b.enc" "$T/b.bad" >/dev/null 2>&1 && fail "tamper not detected"; pass "encryption"
+
+# hotspots + i18n parity
+H="$T/hot"; mkdir -p "$H" && ( cd "$H" && git init -q && git config user.email t@example.com && git config user.name t
+  for i in 1 2 3; do echo "$i" >> a.ts; git add a.ts; git commit -qm "fix: a broke again $i"; done
+  echo x > b.ts; git add b.ts; git commit -qm "feat: b" )
+ho="$(cd "$H" && python3 "$KIT/assets/claude/hotspots.py")"; [[ "$ho" == *"3  a.ts"* && "$ho" != *"b.ts"* ]] || fail "hotspots: $ho"
+mkdir -p "$T/loc/locales/en" "$T/loc/locales/pt-BR"
+echo '{"a":{"b":"x","c":"y"}}' > "$T/loc/locales/en/common.json"; echo '{"a":{"b":"x","c":"y"}}' > "$T/loc/locales/pt-BR/common.json"
+python3 "$KIT/assets/claude/i18n_parity.py" "$T/loc" >/dev/null || fail "i18n parity false alarm"
+echo '{"a":{"b":"segredo"}}' > "$T/loc/locales/pt-BR/common.json"
+io="$(python3 "$KIT/assets/claude/i18n_parity.py" "$T/loc")" && fail "i18n parity missed a key"
+[[ "$io" == *"missing a.c"* && "$io" != *"segredo"* ]] || fail "i18n parity output: $io"
+pass "hotspots + i18n parity"
 
 # media-investigation: frame extractor on a synthetic video
 if command -v ffmpeg >/dev/null 2>&1; then
