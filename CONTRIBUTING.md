@@ -14,4 +14,6 @@ Contributions are welcome: new skills, platform modules, better defaults, transl
 - Open an issue for larger changes first.
 - Run `bash tests/run.sh` (and `claude plugin validate .` if you have Claude Code) before the PR; CI runs the tests and actionlint **with shellcheck**: install both locally (`pip install actionlint-py shellcheck-py`) or you will miss what CI reports.
 - New hook behaviour needs a test in `tests/run.sh`; hooks stay offline and never store prompt text.
+- Imported skills (addyosmani/agent-skills) are not edited by hand: change `tools/sync_upstream_skills.py` and re-run it, so updates stay reproducible.
+- New sub-agents go in `agents/` with an explicit `model:`; mechanical work belongs on a light model.
 - Bump `version` in `.claude-plugin/plugin.json` and `skills/agent-kit/VERSION`, and add a CHANGELOG entry.

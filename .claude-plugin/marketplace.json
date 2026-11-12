@@ -1,8 +1,14 @@
 {
   "name": "agent-kit",
-  "description": "Agent Kit — portable documentation and workflow standard for AI coding agents.",
-  "owner": { "name": "agent-kit contributors" },
+  "description": "Agent Kit — a mandatory, hook-enforced work track for AI coding agents (Claude Code, Codex, Cursor).",
+  "owner": {
+    "name": "agent-kit contributors"
+  },
   "plugins": [
-    { "name": "agent-kit", "source": "./", "description": "Short AGENTS.md core, on-demand rules and skills, terse output, early compaction with handoff re-injection, security & performance skills." }
+    {
+      "name": "agent-kit",
+      "source": "./",
+      "description": "Mandatory work track enforced by hooks, self-heal of small defects on a light model, background CI watcher, evidence gates, 38 skills (security, performance, spec/TDD/review from addyosmani/agent-skills)."
+    }
   ]
 }

@@ -6,12 +6,23 @@ Why: measured boots in the source repos cost 12k–88k tokens before any work, a
 1. `AGENTS.md` (entry point, ≤ 120 lines).
 2. The session state file (`HANDOFF.md` or the task's handoff), ≤ 1k tokens.
 3. One mode from `MODES.md`.
+4. `TRACK.md` (the mandatory stages; the session hook prints its summary).
 
 ## Tier 1 — by task (open only your row)
 
 | Task | Read |
 |---|---|
 | Choosing what to do next | project STATUS file |
+| Any task: which stage am I in, which skill now | `TRACK.md` |
+| A check, build, simulator, emulator or CI step failed during approved work | skill `self-heal` (sub-agent `fixer-lite`) — no question to the owner |
+| After a push / "did CI pass?" | skill `ci-monitor` (sub-agent `ci-watcher`, background) |
+| New feature or significant change without a spec | skills `spec-driven-development`, `planning-and-task-breakdown` |
+| Implementing: slices and tests first | skills `incremental-implementation`, `test-driven-development` |
+| Reviewing a diff before merge / simplifying | skills `code-review-and-quality`, `code-simplification` |
+| Branches, commits, conflicts | skill `git-workflow-and-versioning` |
+| API/module boundary, web UI, browser debugging | skills `api-and-interface-design`, `frontend-ui-engineering`, `browser-testing-with-devtools` |
+| Logs/metrics/tracing, launch, deprecation, ADRs, CI pipeline design | skills `observability-and-instrumentation`, `shipping-and-launch`, `deprecation-and-migration`, `documentation-and-adrs`, `ci-cd-and-automation` |
+| Framework-specific decision, high-stakes assumption | skills `source-driven-development`, `doubt-driven-development` |
 | Bug, regression, "broke again" | `MODES.md#fixer`, skill `systematic-debug`, `REWORK-LEDGER` of the project |
 | Feature | `MODES.md#builder`, `TASK-CONTRACT.md`, `QUALITY-GATES.md` |
 | Product question, scope, acceptance | `MODES.md#product` |

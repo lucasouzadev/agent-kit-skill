@@ -23,6 +23,15 @@ if [ "$event" = startup ] && [ -n "$PY" ] && [ -f "$here/update.py" ]; then
   if [ "${AGENT_KIT_AUTOCHECK:-0}" = 1 ]; then ( "$PY" "$here/update.py" check --quiet --if-stale >/dev/null 2>&1 & ) || true; fi
 fi
 echo "[agent-kit] session ${event}. Rules: AGENTS.md (approval gate, caveman ≤15 lines, evidence states)."
+# The mandatory track (docs/agents/standard/TRACK.md). Printed every start/resume/compact so it survives
+# compaction and is never "optional reading". Keep it at 5 lines.
+cat <<'TRACK'
+[agent-kit] MANDATORY TRACK — every task, in order; a stage may be N/A only with a reason:
+  0 Boot (AGENTS.md + handoff) → 1 Brief (skill intent-compiler) → 2 Plan/G1 (session-preflight; spec/plan or systematic-debug)
+  → 3 Owner "yes" (record it) → 4 Build in slices, test first → 5 Self-heal small in-scope failures WITHOUT asking (skill self-heal, sub-agent fixer-lite)
+  → 6 Verify/G2 (evidence states) → 7 Push feature branch + watch CI in background (skill ci-monitor, sub-agent ci-watcher) → 8 Close (handoff, test list).
+  Load the named skill before each stage (Skill tool). AGENTS.md overrides any skill. Detail: docs/agents/standard/TRACK.md
+TRACK
 [ "$event" = startup ] && echo "[agent-kit] Canary: use the form of address the owner gives in this session; if none yet, ask once."
 if git rev-parse --git-dir >/dev/null 2>&1; then
   echo "branch: $(git branch --show-current 2>/dev/null)  dirty files: $(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"

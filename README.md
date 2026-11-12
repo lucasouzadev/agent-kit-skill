@@ -1,81 +1,159 @@
+<p align="center">
+  <img src="docs/assets/banner.svg" alt="Agent Kit — a mandatory, hook-enforced work track for AI coding agents: Boot, Brief, Plan, Approve, Build, Self-heal, Verify, Watch CI, Close" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-1.9.0-orange.svg"></a>
+  <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-d97757.svg">
+  <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-38-6b5bff.svg">
+  <img alt="Works with AGENTS.md" src="https://img.shields.io/badge/AGENTS.md-compatible-2ea44f.svg">
+  <img alt="Codex · Cursor" src="https://img.shields.io/badge/Codex%20%C2%B7%20Cursor-supported-555.svg">
+</p>
+
 # Agent Kit
 
-A portable documentation and workflow standard for AI coding agents (Claude Code, Codex, Cursor and any tool that reads `AGENTS.md`), packaged as a Claude Code plugin and as plain Agent Skills.
+**A mandatory, hook-enforced work track for AI coding agents** — Claude Code, Codex, Cursor and any tool that reads `AGENTS.md`. Packaged as a Claude Code plugin and as plain [Agent Skills](https://agentskills.io), installable into any repository with one command.
 
-It was distilled from several production repositories (web + BaaS, React Native, native iOS/Android, public CI) where agents worked daily, and generalized so it fits any project.
+Agents ignore rules they only *read about*. Agent Kit turns the rules into a **track** that hooks print, check and enforce; lets the agent **fix small defects on its own** (simulator crashed, cache stale, test broken by its own change) instead of stopping to ask; and **watches CI in the background on a light model** so "pushed" becomes "green".
+
+Distilled from production repositories (web + BaaS, React Native/Expo, native iOS/Android, public CI) where agents work daily, and generalized for any stack.
+
+**Contents:** [Why](#why) · [The track](#the-mandatory-track) · [How it is enforced](#how-it-is-enforced) · [Self-heal & CI watch](#self-heal-and-ci-watch-on-a-light-model) · [Install](#install) · [Skills](#skills) · [Docs](#standard-docs) · [FAQ](#faq) · [Contributing](#contributing)
 
 ## Why
-- **Boot cost.** Agent docs grow until every session pays tens of thousands of tokens before work starts, and pays again after every compaction.
-- **Rework.** The same bug "fixed" five times, "done" without evidence, plans lost to compaction.
-- **Noise.** Long replies the owner has to read.
+- **Agents skip the process.** A long `CLAUDE.md` is read once and forgotten; skills are "suggestions". → A short track, re-injected every session and after every compaction, with the required skills named per task and a gate at the end of each turn.
+- **Agents stop for trivia.** "The simulator crashed, may I restart it?" ten times a session. → A pre-approved **self-heal envelope**: small, reversible, in-scope defects are fixed without asking, delegated to a cheaper model.
+- **"Done" without proof; red PRs left behind.** → Evidence states (PASS / FAIL / BLOCKED / NOT RUN / N/A) and a background **CI watcher** after every push.
+- **Boot cost and noise.** → ≤ 120-line `AGENTS.md`, everything else on demand; terse `caveman` replies; early, lossless compaction.
 
-## What you get
-- **Short core, modules on demand.** `AGENTS.md` (≤ 120 lines) is the only always-loaded file; the rest is a doc or a skill opened by task.
-- **Meeting-style sessions.** The owner talks, the agent leads (`session-guide`): it boots from `AGENTS.md` + the handoff, briefs where things stopped, restates each request as goal + acceptance, and asks one question at a time. No prompt writing: every message is silently compiled into an effective brief (`intent-compiler`) — goal, context pulled from the repo, acceptance, constraints, mode, skills — that only the agent reads.
-- **Pass the baton.** The statusline shows weekly/5-hour plan usage; near the limit a hook makes the agent offer a self-contained continuation prompt (`baton-pass`) you can paste into any other IDE, model or platform.
-- **Terse output.** `caveman` output style: ≤ 15 lines, result first, nothing important dropped.
-- **Early, lossless compaction.** Compaction at 200k tokens instead of near a 1M window; a `PreCompact` hook tells the summary to keep the active state; a `SessionStart` hook re-injects branch, commits and handoff after compaction; a statusline shows context use.
-- **Evidence over claims.** PASS / FAIL / BLOCKED / NOT RUN / N/A; merged ≠ deployed ≠ verified; human approval gate before writes.
-- **Device lab in CI.** No Mac or spare phones? Workflow templates build and test on hosted emulators/simulators, package APK/TestFlight builds, publish Expo OTA and run Maestro — with a safe secret list and public-repo hardening.
-- **The approval gate is enforced, not just written.** A `PreToolUse` hook asks you before pushes to the default branch, deploys, store builds, CI dispatches, destructive SQL or secret reads, and blocks the catastrophic ones outright (seatbelt, not a sandbox; `ask` is not guaranteed in bypass modes).
-- **PR quality.** A template with QUALITY-G1/G2, a local linter and an optional check that fails PRs with unfilled evidence, `PASS` without proof, missing reasons, secrets or `pull_request_target` — and flags risky areas (workflows, hooks, migrations, dependencies, native shell, auth). It judges honesty and structure, not correctness.
-- **Pick your size.** `--profile lite` (7 skills) · `standard` (15) · `full`; fewer skills = fewer always-loaded tokens.
-- **Works beyond Claude Code.** Codex, Cursor and others get the same rules as plain text (`NO-HOOKS.md`, a Cursor rule); only the automation is Claude-specific.
-- **Measured, not assumed.** Local metrics (counts only, never prompt text): sessions, compactions, peak context, modes, baton offers, plus a git rework signal — `python3 .claude/agent-kit/metrics.py report`.
-- **Hooks you can trust.** Kit files are hash-checked against the install manifest at session start; an optional CI guard blocks PRs that change hooks outside the installer.
-- **Security & performance skills** anchored on OWASP Top 10:2025, ASVS 5.0, MASVS v2.1, NIST SP 800-63-4, SSDF, SLSA, Core Web Vitals, Android vitals and Apple hang metrics.
+## The mandatory track
+
+| # | Stage | Required skill(s) |
+|---|---|---|
+| 0 | Boot — `AGENTS.md` + handoff, `git fetch` | `session-guide` |
+| 1 | Brief — goal, acceptance, constraints, mode | `intent-compiler` (+ `triage`, `media-investigation`) |
+| 2 | Plan — surface, risks, tests first (QUALITY-G1) | `session-preflight`, `spec-driven-development`, `planning-and-task-breakdown` / `systematic-debug` |
+| 3 | Owner "yes" — recorded in the handoff | — |
+| 4 | Build in thin slices, test first | `incremental-implementation`, `test-driven-development` |
+| 5 | **Self-heal** small in-scope failures, no question | `self-heal` → sub-agent `fixer-lite` (light model) |
+| 6 | Verify — evidence states (QUALITY-G2) | `code-review-and-quality`, `pr-quality` |
+| 7 | **Push + watch CI** in the background | `ci-monitor` → sub-agent `ci-watcher` (light model) |
+| 8 | Close — test list, handoff | `handoff` |
+
+Full text: [`TRACK.md`](skills/agent-kit/standard/TRACK.md). `AGENTS.md` overrides every skill, including imported ones.
+
+## How it is enforced
+
+| Layer | Mechanism | What it does |
+|---|---|---|
+| Always loaded | `AGENTS.md` §0b + `CLAUDE.md` operating contract | The track and the self-heal pre-approval are in the entry points every agent and sub-agent loads |
+| `SessionStart` hook | `session-context.sh` | Prints branch, commits, handoff **and the track** on startup, resume and after every compaction |
+| `UserPromptSubmit` hook | `intent-brief.sh` | Detects the mode (en/pt/es) and names the **skills to load before acting** (only those installed) |
+| `PreToolUse` hooks | `action-guard.sh`, `pr-gate.sh` | Asks before pushes to main, deploys, store builds, destructive SQL, secret reads; blocks PRs whose body fails the quality check |
+| `Stop` hook | `track-gate.sh` | A turn that changed files and ends **without evidence states** is sent back once to verify, self-heal and report (never loops) |
+| Sub-agents | `fixer-lite`, `ci-watcher` (`model: haiku`) | Mechanical heals and CI watching run on a light model, in the background |
+| Other tools | `NO-HOOKS.md`, Cursor rule | The same duties, done by hand |
+
+## Self-heal and CI watch on a light model
+- **Heal, don't ask:** lint/type/test failures caused by the change, iOS simulator / Android emulator that won't boot or crashes, Metro/Gradle/Pods/DerivedData caches, busy ports, flaky steps, red CI on the feature branch. Playbook: [`self-heal/playbook.md`](skills/self-heal/playbook.md).
+- **Never as a heal:** skipping or weakening tests, `--no-verify`, secrets, production, migrations, releases, the default branch, force-push. Max **2 attempts per cause**, then stop and report.
+- **CI:** after every push the main agent starts `ci-watcher` in the background; it runs [`ci_watch.py`](skills/agent-kit/assets/claude/ci_watch.py) (read-only, via `gh`), classifies failures as *infra* (re-run candidate) or *defect* (fix on the same feature branch), and replies `CI: PASS|FAIL|BLOCKED|NOT RUN <url>`.
+- Change the light model in `.claude/agents/*.md` (`haiku`, `sonnet` or `inherit`).
 
 ## Install
 
-### As a Claude Code plugin (skills, output style and hooks for every project)
+### As a Claude Code plugin
 ```
-/plugin install agent-kit --marketplace lucasouzadev/agent-kit-skill
+/plugin marketplace add lucasouzadev/agent-kit-skill
+/plugin install agent-kit@agent-kit
 ```
-or `/plugin marketplace add lucasouzadev/agent-kit-skill` then `/plugin install agent-kit@agent-kit`.
-Then, inside a repository, ask: *"set up agent-kit in this repo"* — the `agent-kit` skill surveys the repo, proposes a plan and runs the installer with `--no-vendor`.
+Then, inside a repository: *"set up agent-kit in this repo"* — the `agent-kit` skill surveys the repo, proposes a plan and runs the installer with `--no-vendor`.
 
-### Vendored into a repository (works where plugins are not installed: cloud sessions, teammates, other tools)
+### Vendored into a repository (cloud sessions, teammates, other tools)
 ```bash
 git clone https://github.com/lucasouzadev/agent-kit-skill
 python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo --dry-run
-python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo          # add --public-ci for public CI repos
+python3 agent-kit-skill/skills/agent-kit/scripts/install.py /path/to/repo          # --public-ci for public CI repos
 grep -rn '{{' /path/to/repo/AGENTS.md                                               # fill placeholders
 ```
-Use **either** the plugin hooks or the vendored hooks in a given repo, not both.
-Options: `--pr-quality local|ci` · `--profile lite|standard|full` · `--cursor` · `--with-guard` (CI guard for `.claude/` changes + CODEOWNERS hint) · `.claude/agent-kit/overrides` (`NAME.md=path`) when the project keeps its own version of a standard doc · `.claude/agent-kit/skip-skills` to opt out of a kit skill. Re-running the installer updates only files it wrote and you did not edit (hash manifest); everything else is reported as `SKIP`.
+Use **either** the plugin hooks or the vendored hooks in a repo, not both. Options: `--profile lite|standard|full` · `--pr-quality local|ci` · `--cursor` · `--with-guard` · `.claude/agent-kit/overrides` · `.claude/agent-kit/skip-skills`. Re-running updates only files the kit wrote and you did not edit (hash manifest); existing `AGENTS.md`/`CLAUDE.md` are kept and the installer prints a `hint` to merge the track sections.
 
-## Contents
-| Path | Role |
+**Upgrading from ≤ 1.8?** Re-run the installer (hooks, docs, sub-agents and skills refresh), then merge §0b and the self-heal line into your `AGENTS.md` and the operating contract into `CLAUDE.md` from [`templates/`](skills/agent-kit/templates/).
+
+## Skills
+
+**Workflow & session (kit)**
+| Skill | Role |
 |---|---|
 | `skills/agent-kit/` | setup skill: `templates/`, `standard/` docs, `assets/claude/` (settings, hooks, statusline), `scripts/install.py` |
-| `skills/caveman` | terse output |
+| `skills/self-heal` | fix small in-scope defects without stopping or asking; simulator/emulator/cache playbook; delegates to `fixer-lite` |
+| `skills/ci-monitor` | watch Actions runs after each push on a light model (`ci-watcher`), classify, heal the feature branch |
+| `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time |
+| `skills/intent-compiler` | invisible talk → brief conversion before acting |
 | `skills/session-preflight` | session packet before acting |
+| `skills/triage` | many asks at once → prioritized list |
+| `skills/media-investigation` | attached screenshots/videos: read all of it, report extra findings |
 | `skills/systematic-debug` | four-step root cause, two-attempt stop |
+| `skills/pr-quality` | honest PRs: template, self-review, local lint, CI check |
+| `skills/handoff` | session state file |
+| `skills/baton-pass` | continuation prompt for another tool/session when limits are near |
+| `skills/caveman` | terse output |
+
+**Quality, security & platforms (kit)**
+| Skill | Role |
+|---|---|
 | `skills/fundamentals-audit` | race, idempotency, client trust, separation, integration tests |
 | `skills/ux-check` | UX laws, states, a11y, responsiveness, UI performance |
-| `skills/media-investigation` | attached screenshots/videos: read all of it, answer, then report extra findings (read-only) |
-| `skills/triage` | many asks at once → prioritized list: risk first, quick wins batched, large items get spec/plan options |
-| `skills/pr-quality` | honest PRs: template, self-review, local lint, how to read the CI check |
-| `skills/handoff` | session state file |
-| `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time, agenda |
-| `skills/intent-compiler` | invisible talk → brief conversion before acting (rubric + examples) |
-| `skills/baton-pass` | continuation prompt for another tool/session when limits are near |
-| `skills/security-core` · `identity-session` · `data-privacy` · `supply-chain` | security modules |
-| `skills/performance-core` · `platform-security` | performance and per-platform (native, web, hybrid WebView, desktop web runtime) |
-| `skills/ci-device-lab` | device lab in GitHub Actions: Android emulator, iOS simulator, APK/TestFlight builds, Expo OTA and EAS (cloud or local), Maestro E2E, private-source + public-CI pattern, secret list and hardening |
-| `output-styles/caveman.md` | terse output style |
-| `hooks/hooks.json` | plugin hooks (SessionStart, PreCompact) |
+| `skills/security-core` · `identity-session` · `data-privacy` · `supply-chain` | OWASP Top 10:2025, ASVS 5.0, NIST SP 800-63-4, SSDF, SLSA |
+| `skills/performance-core` · `platform-security` | Core Web Vitals, Android vitals, Apple hangs; native, web, WebView, desktop |
+| `skills/ci-device-lab` | device lab in GitHub Actions: emulator, simulator, APK/TestFlight, Expo OTA/EAS, Maestro |
 
-### `standard/` docs
-`00-MAP` · `MODES` (Fixer, Builder, Product, Architect, Lens, Auditor) · `WORKFLOW` · `QUALITY-GATES` (G1/G2) · `DONE` · `SAFEGUARDS` · `TASK-CONTRACT` · `HANDOFF-TEMPLATE` · `REWORK-LEDGER` · `OWNER-DECISIONS-TEMPLATE` · `ORCHESTRATION` · `THREAT-MODEL` · `CHANGELOG-GUIDE` · `CONTEXT-BUDGET` · `CANARY` · `SECURITY-PERFORMANCE`
+**Engineering lifecycle — imported from [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (MIT)**
+| Skill | Role |
+|---|---|
+| `spec-driven-development` · `planning-and-task-breakdown` | spec before code; small, ordered tasks |
+| `incremental-implementation` · `test-driven-development` | thin verified slices; red-green-refactor |
+| `code-review-and-quality` · `code-simplification` | five-axis review; clarity over cleverness |
+| `git-workflow-and-versioning` · `ci-cd-and-automation` | branches, commits, conflicts; pipelines and quality gates |
+| `api-and-interface-design` · `frontend-ui-engineering` · `browser-testing-with-devtools` | stable interfaces; accessible UIs; real-browser debugging |
+| `observability-and-instrumentation` · `shipping-and-launch` · `deprecation-and-migration` · `documentation-and-adrs` | logs/metrics/traces; launches; removals; decisions |
+| `source-driven-development` · `doubt-driven-development` | official docs over memory; adversarial review of decisions |
 
-## Canary
-Optional weak signal that the agent loaded the rules: the owner gives a form of address at the start of each session and the agent uses it in every reply. It is never written to any file.
+Overlapping upstream skills are mapped to the kit's own (`systematic-debug`, `security-core`, `performance-core`, `session-guide`). Update with [`tools/sync_upstream_skills.py`](tools/sync_upstream_skills.py); notices in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+**Profiles** (`profiles.json`): `lite` (13 skills) for small projects · `standard` (27) for apps with real users · `full` (all 38) when the project builds in CI. Fewer skills = fewer always-loaded tokens.
+
+Also: `output-styles/caveman.md` (terse output style), `hooks/hooks.json` (plugin hooks), `agents/` (light-model sub-agents).
+
+## Standard docs
+`TRACK` · `00-MAP` · `MODES` (Fixer, Builder, Product, Architect, Lens, Auditor) · `WORKFLOW` · `QUALITY-GATES` (G1/G2) · `DONE` · `SAFEGUARDS` · `TASK-CONTRACT` · `HANDOFF-TEMPLATE` · `REWORK-LEDGER` · `OWNER-DECISIONS-TEMPLATE` · `ORCHESTRATION` · `THREAT-MODEL` · `CHANGELOG-GUIDE` · `CONTEXT-BUDGET` · `CANARY` · `CONVERSATION` · `NO-HOOKS` · `SECURITY-PERFORMANCE`
+
+## More features
+- **Meeting-style sessions:** plain talk becomes an invisible brief; no prompt engineering needed.
+- **Pass the baton:** statusline shows weekly/5-hour usage; near the limit the agent offers a self-contained continuation prompt for any IDE or model.
+- **Early, lossless compaction** at 200k tokens with state re-injection.
+- **Approval gate enforced** (`action-guard`): a seatbelt, not a sandbox.
+- **PR quality:** template + local linter + optional CI check that fails PRs with unfilled evidence, `PASS` without proof, secrets or `pull_request_target`.
+- **Measured:** `python3 .claude/agent-kit/metrics.py report` (counts only, never prompt text), rework hotspots, i18n parity.
+- **Trusted hooks:** hash-checked against the install manifest; optional CI guard for `.claude/` changes.
+
+## FAQ
+**Does it work without Claude Code?** Yes. Codex, Cursor, Copilot, Gemini CLI and others read `AGENTS.md`; `NO-HOOKS.md` lists the duties to do by hand. Only the automation (hooks, sub-agents, output style) is Claude-specific.
+
+**Will self-heal let the agent do something dangerous?** No. The envelope covers small, reversible, in-scope fixes; secrets, production, migrations, releases, the default branch and test weakening are stop conditions, and `action-guard` still asks before risky commands.
+
+**Does the CI watcher cost a lot?** It runs on `haiku` and spends most of its time in a polling script; the main agent is not blocked.
+
+**Can I turn a gate off?** `AGENT_KIT_TRACK_GATE=0`, `AGENT_KIT_GUARD=0`, or remove a hook from `.claude/settings.json`.
 
 ## Notes
 - `autoCompactWindow` / `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (100k–1M). If a Claude Code version ignores them from project settings, put them in `~/.claude/settings.json`.
-- Custom output styles need a recent Claude Code; unknown styles fall back to Default.
 - Plugins cannot set `outputStyle`, `env` or `statusLine`; the installer writes those to the project settings.
+- Canary: optional weak signal that the agent loaded the rules (a form of address used in every reply, never written to files).
 
 ## Contributing
-Run `bash tests/run.sh` before a PR (CI runs it too). See [CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).
+Run `bash tests/run.sh` before a PR (CI runs it too). See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). License: [MIT](LICENSE).
+
+<sub>Keywords: Claude Code plugin, Claude Code hooks, agent skills, AGENTS.md, CLAUDE.md template, AI coding agent workflow, Codex, Cursor rules, context engineering, self-healing agents, CI monitoring, GitHub Actions, iOS simulator, Android emulator, Expo, React Native, spec-driven development, TDD, code review, OWASP, prompt engineering.</sub>

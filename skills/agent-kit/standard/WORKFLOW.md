@@ -1,5 +1,7 @@
 # WORKFLOW — From a short owner message to a verified handoff
 
+The stages and their required skills are fixed in `TRACK.md`; this file details them.
+
 ## 1. Intake
 - Owner messages are short, like a meeting or feedback. Turn them into a **session packet** (skill `session-preflight`):
   `GOAL · ACCEPTANCE (numbers) · SURFACE · OUT OF SCOPE · MODE · GATES (N/A + reason) · EVIDENCE · DELIVERY · BUDGET`
@@ -12,6 +14,7 @@ Surface map, risks, tests designed before the solution, delivery channel, rollba
 ## 3. Execute
 - Small, verified steps; one root cause per round; the canonical project checks after each step.
 - Parallel work only on disjoint files or isolated worktrees (`ORCHESTRATION.md`).
+- A check, simulator or CI step fails inside the approved scope → skill `self-heal` (light sub-agent `fixer-lite`), no question to the owner; max 2 attempts per cause.
 - No "while I was here". Useful-but-not-required → defer; future milestone → do not implement; architectural change → decision record first.
 
 ## 4. Verify (QUALITY-G2)
@@ -19,6 +22,7 @@ Self-review the diff, run the real checks, open and read screenshots, record PAS
 
 ## 5. Deliver
 - Commit: imperative mood, explain *why*. Branch/PR per the session's instructions; never merge on your own; never force-push a shared branch.
+- After the push, watch CI in the background (skill `ci-monitor`, sub-agent `ci-watcher`); heal red runs on the feature branch.
 - Declare the delivery channel when the project has more than one (e.g. OTA / build / server).
 - Replace the handoff file (`HANDOFF-TEMPLATE.md`), update plan checkboxes, changelog if user-visible.
 - Reply to the owner in caveman form, ending with the AUTOMATED vs PHYSICAL test list.

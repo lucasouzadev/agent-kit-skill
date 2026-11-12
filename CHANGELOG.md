@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.9.0 — 2026-11-12
+- **Mandatory track** (`standard/TRACK.md`): Boot → Brief → Plan → Owner "yes" → Build → Self-heal → Verify → Push + watch CI → Close, each stage naming the skill to load. Why: agents treated the rules as optional reading and skipped most of them.
+  - `SessionStart` hook prints the track on startup, resume and after every compaction.
+  - `intent-brief` names the skills to load for the detected mode (only those installed).
+  - New `Stop` hook `track-gate.sh`: a turn that changed files (Edit/Write/commit) and ends without evidence states is sent back once to verify, self-heal and report. Honours `stop_hook_active`, ignores sub-agent lines, logs counts only, fails open; `AGENT_KIT_TRACK_GATE=0` disables.
+  - `templates/CLAUDE.md` is now an operating contract (MUST list); `templates/AGENTS.md` gets §0b (track) and the self-heal pre-approval in §1. The installer prints a `hint` when an existing `AGENTS.md`/`CLAUDE.md` predates the track.
+- **Self-heal** skill + playbook: small, reversible, in-scope defects (lint/type/tests broken by the change, simulator/emulator boot or crash, caches, busy ports, flaky steps, red CI on the feature branch) are fixed without stopping or asking; 2 attempts per cause; never by weakening tests. `SAFEGUARDS`, `MODES`, `WORKFLOW`, `systematic-debug` aligned.
+- **CI monitor** skill + `ci_watch.py` (read-only `gh` poller: green / defect / infra re-run candidate / no runs / no gh).
+- **Light-model sub-agents** in `agents/` (plugin) and `.claude/agents/` (vendored): `fixer-lite` and `ci-watcher`, both `model: haiku`.
+- **17 skills imported from addyosmani/agent-skills (MIT)** via `tools/sync_upstream_skills.py`: spec, planning, incremental implementation, TDD, code review, simplification, git workflow, CI/CD, API design, frontend UI, browser testing, observability, shipping, deprecation, ADRs, source-driven and doubt-driven development. Each carries `LICENSE.txt`, a precedence notice (AGENTS.md wins) and its checklists inside the skill folder; overlapping upstream skills map to the kit's own.
+- Profiles: `lite` 13, `standard` 27, `full` 38 skills.
+- Repository: banner and social-preview image, README rewrite (enforcement table, FAQ, keywords), plugin keywords, `SECURITY.md`, bug/feature issue templates.
+- Tests: track banner, required skills, Stop gate (block, evidence, no edits, commit, no loop, opt-out, fail open, no text echo), sub-agents installed on the light model, `ci_watch.py` with a fake `gh`, imported-skill licence/notice/links.
+
 ## 1.8.0 — 2026-11-09
 - `media-investigation` skill: when the owner attaches media, the agent reads all of it (video via `scripts/frames.py` + ffmpeg: frame grid, timestamps), answers the question, then reports extra findings in a separate block (SEEN vs INFERRED, severity, evidence, max 7), read-only until approved; privacy and budget limits. Media the owner attached but did not mention is analyzed anyway and cited explicitly.
 - `triage` skill: several asks at once become a prioritized list (risk first, quick wins batched by area, large items get 2–3 spec/plan options, parked items with their blocking question).

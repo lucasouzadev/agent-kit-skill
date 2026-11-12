@@ -1,9 +1,38 @@
 {
   "name": "agent-kit",
   "displayName": "Agent Kit",
-  "version": "1.8.0",
-  "description": "Portable AI-agent documentation standard: short AGENTS.md entry point, on-demand rules, handoff-driven sessions, terse output, early compaction with state re-injection, and stack-agnostic security/performance skills.",
+  "version": "1.9.0",
+  "description": "Mandatory, hook-enforced work track for AI coding agents: short AGENTS.md entry point, self-healing of small defects without stopping, CI watched in the background on a light model, evidence-based quality gates, early compaction with state re-injection, 38 skills (security, performance, spec/TDD/review).",
   "license": "MIT",
-  "keywords": ["agents", "AGENTS.md", "context-engineering", "compaction", "security", "performance", "workflow"],
-  "repository": "https://github.com/lucasouzadev/agent-kit-skill"
+  "keywords": [
+    "agents",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "claude-code",
+    "claude-code-plugin",
+    "agent-skills",
+    "hooks",
+    "workflow",
+    "self-healing",
+    "ci-monitoring",
+    "github-actions",
+    "context-engineering",
+    "compaction",
+    "tdd",
+    "spec-driven-development",
+    "code-review",
+    "security",
+    "performance",
+    "codex",
+    "cursor",
+    "react-native",
+    "expo",
+    "ios-simulator",
+    "android-emulator"
+  ],
+  "repository": "https://github.com/lucasouzadev/agent-kit-skill",
+  "homepage": "https://github.com/lucasouzadev/agent-kit-skill",
+  "author": {
+    "name": "agent-kit contributors"
+  }
 }

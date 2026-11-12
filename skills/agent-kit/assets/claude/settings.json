@@ -92,6 +92,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/agent-kit/track-gate.sh"
+          }
+        ]
+      }
     ]
   }
 }

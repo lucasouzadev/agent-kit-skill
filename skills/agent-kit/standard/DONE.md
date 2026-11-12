@@ -8,6 +8,7 @@ Done only when every applicable item is ✓ or `N/A (reason)`. Blank = not check
 **Tests** — happy path · neighbours without regression · acceptance edge cases · integration test for flows with money, limits, permissions or other users' data · race / idempotency / tampered client value when read-decide-write · bug fix has a test that failed before.
 **Release** — migrations versioned and backward compatible · delivery channel declared · compatible with clients in the field · rollback written for medium/high risk.
 **Docs** — handoff replaced · plan checkboxes · changelog for user-visible change · rework ledger row for fixes of a known class.
+**CI** — pushed branch watched to the end (`ci-monitor`): run URL + state; self-heal cycles listed.
 **Gates** — QUALITY-G1 recorded · QUALITY-G2 executed with evidence · no open P0/P1 · nothing FAIL/BLOCKED while calling it Done.
 
 PR open ≠ merged. File written ≠ feature delivered. Merged ≠ in production.

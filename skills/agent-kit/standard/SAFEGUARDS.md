@@ -20,7 +20,7 @@ Classify (docs, visual, data, accounts, security, migration, infra, release) · 
 | Licence or copyright unclear | do not publish the asset/dependency |
 | Unknown API/SDK or store policy change | check official docs; never invent capability |
 | Conflict with a recorded decision | stop; propose a decision record |
-| Build/test failure | mark FAIL; never mask with skip or N/A |
+| Build/test failure | inside an approved task and in scope: self-heal (skill `self-heal`, max 2 attempts); otherwise mark FAIL; never mask with skip or N/A |
 | Two failed attempts at the same fix | stop; bring evidence and a recommendation |
 | Owner withdraws permission | stop future actions |
 
