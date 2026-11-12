@@ -22,6 +22,8 @@ Why: measured boots in the source repos cost 12k–88k tokens before any work, a
 | Branches, commits, conflicts | skill `git-workflow-and-versioning` |
 | API/module boundary, web UI, browser debugging | skills `api-and-interface-design`, `frontend-ui-engineering`, `browser-testing-with-devtools` |
 | Logs/metrics/tracing, launch, deprecation, ADRs, CI pipeline design | skills `observability-and-instrumentation`, `shipping-and-launch`, `deprecation-and-migration`, `documentation-and-adrs`, `ci-cd-and-automation` |
+| Rebuild what an app does ("clone X", from public pages/screenshots/your own account) | the `replica-*` pack in order: `replica-recon` → `architect` → `design` → `build` → `backend` → `test` → `diff` → `entrepreneur` → `brand` → `launch` → `deploy` (outputs in `replica/`; clean-room: features and flows, never code, logo, copy or content) |
+| Understand a shipped binary/package/APK/Electron app, decompile, compare versions (authorized targets only) | skill `reverse-engineer-anything` (REA MCP; read its `DISCLAIMER.md`; approval gate before running against a target) |
 | Framework-specific decision, high-stakes assumption | skills `source-driven-development`, `doubt-driven-development` |
 | Bug, regression, "broke again" | `MODES.md#fixer`, skill `systematic-debug`, `REWORK-LEDGER` of the project |
 | Feature | `MODES.md#builder`, `TASK-CONTRACT.md`, `QUALITY-GATES.md` |

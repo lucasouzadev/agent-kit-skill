@@ -8,7 +8,7 @@
     {
       "name": "agent-kit",
       "source": "./",
-      "description": "Mandatory work track enforced by hooks, self-heal of small defects on a light model, background CI watcher, evidence gates, 38 skills (security, performance, spec/TDD/review from addyosmani/agent-skills)."
+      "description": "Mandatory work track enforced by hooks, self-heal of small defects on a light model, background CI watcher, evidence gates, 50 skills (security, performance, spec/TDD/review from addyosmani/agent-skills)."
     }
   ]
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.0 — 2026-11-12
+- **`replica-*` pack (11 skills)** from Jakeschincariol/replica-skill (MIT): recon → architect → design → build → backend → test → diff → entrepreneur → brand → launch → deploy, with their stdlib-only Python tools (kept side by side: they call each other by sibling path). Clean-room limits travel with them.
+- **`reverse-engineer-anything`** from morluto/rea (MIT): the agent skill and its references plus `DISCLAIMER.md`; the REA MCP server is not bundled (`npx rea-agents setup`). Notice line states: authorized analysis only, approval gate applies.
+- `tools/sync_upstream_skills.py` now takes `replica` / `rea` sources; all imports carry `LICENSE.txt` and the precedence notice. Both packs are `full`-profile only and skipped for `--public-ci` repos. `00-MAP` gets rows for them; tests check licence, notice, disclaimer and tool syntax.
+- 50 skills in total.
+
 ## 1.9.0 — 2026-11-12
 - **Mandatory track** (`standard/TRACK.md`): Boot → Brief → Plan → Owner "yes" → Build → Self-heal → Verify → Push + watch CI → Close, each stage naming the skill to load. Why: agents treated the rules as optional reading and skipped most of them.
   - `SessionStart` hook prints the track on startup, resume and after every compaction.

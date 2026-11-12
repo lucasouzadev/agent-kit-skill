@@ -258,12 +258,15 @@ pass "ci_watch (green, defect, infra, no runs, no gh)"
 
 # imported skills: licence travels with each one, links resolve inside the skill folder, precedence notice
 for d in "$ROOT"/skills/*/; do
-  grep -q "Imported from \[addyosmani/agent-skills\]" "$d/SKILL.md" 2>/dev/null || continue
+  grep -q "^> Imported from \[" "$d/SKILL.md" 2>/dev/null || continue
   [ -f "$d/LICENSE.txt" ] || fail "imported skill without licence: $d"
   grep -q "AGENTS.md" "$d/SKILL.md" || fail "imported skill without precedence notice: $d"
   grep -rq '\.\./\.\./references/' "$d" && fail "imported skill links outside its folder: $d"
   for r in $(grep -ohE '\(?`?references/[A-Za-z0-9_.-]+\.md' "$d/SKILL.md" | sed -E 's/^[(`]+//' | sort -u); do [ -f "$d/$r" ] || fail "broken link $d$r"; done
 done
+[ -f "$ROOT/skills/reverse-engineer-anything/DISCLAIMER.md" ] || fail "rea skill without its disclaimer"
+grep -q "DISCLAIMER.md" "$ROOT/skills/reverse-engineer-anything/SKILL.md" || fail "rea notice must point to the disclaimer"
+for f in "$ROOT"/skills/replica-*/*.py; do python3 -m py_compile "$f" || fail "replica tool syntax $f"; done
 pass "imported skills (licence, notice, links)"
 
 # docs stay in sync with the skills folder

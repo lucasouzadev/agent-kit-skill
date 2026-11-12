@@ -41,7 +41,8 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parent.parent          # skills/agent-kit
 KIT_ROOT = SKILL_DIR.parent.parent                           # repo root when used from the plugin repo
 VERSION = (SKILL_DIR / "VERSION").read_text().strip() if (SKILL_DIR / "VERSION").exists() else "dev"
-CI_SKIP_SKILLS = {"ux-check", "fundamentals-audit", "performance-core", "platform-security"}
+CI_SKIP_SKILLS = {"ux-check", "fundamentals-audit", "performance-core", "platform-security", "reverse-engineer-anything"}
+CI_SKIP_PREFIXES = ("replica-",)  # app-cloning pack: irrelevant to a public CI-only repo
 
 
 def sha(p: Path) -> str:
@@ -140,7 +141,7 @@ def main(argv):
                 if (target / ".claude/skills" / sd.name).exists() and any(k.startswith(f".claude/skills/{sd.name}/") for k in old):
                     log.append(f"note   skill {sd.name} is outside profile '{profile}' (installed earlier; remove by hand if unwanted)")
                 continue
-            if (public and sd.name in CI_SKIP_SKILLS) or sd.name in skip:
+            if (public and (sd.name in CI_SKIP_SKILLS or sd.name.startswith(CI_SKIP_PREFIXES))) or sd.name in skip:
                 continue
             for f in sorted(sd.rglob("*")):
                 if f.is_file():
