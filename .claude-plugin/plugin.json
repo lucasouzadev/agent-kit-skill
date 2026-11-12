@@ -1,8 +1,8 @@
 {
   "name": "agent-kit",
   "displayName": "Agent Kit",
-  "version": "1.9.0",
-  "description": "Mandatory, hook-enforced work track for AI coding agents: short AGENTS.md entry point, self-healing of small defects without stopping, CI watched in the background on a light model, evidence-based quality gates, early compaction with state re-injection, 38 skills (security, performance, spec/TDD/review).",
+  "version": "1.10.0",
+  "description": "Mandatory, hook-enforced work track for AI coding agents: short AGENTS.md entry point, self-healing of small defects without stopping, CI watched in the background on a light model, evidence-based quality gates, early compaction with state re-injection, 50 skills (security, performance, spec/TDD/review).",
   "license": "MIT",
   "keywords": [
     "agents",

@@ -5,9 +5,9 @@
 <p align="center">
   <a href="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-1.9.0-orange.svg"></a>
+  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-1.10.0-orange.svg"></a>
   <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-d97757.svg">
-  <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-38-6b5bff.svg">
+  <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-50-6b5bff.svg">
   <img alt="Works with AGENTS.md" src="https://img.shields.io/badge/AGENTS.md-compatible-2ea44f.svg">
   <img alt="Codex · Cursor" src="https://img.shields.io/badge/Codex%20%C2%B7%20Cursor-supported-555.svg">
 </p>
@@ -121,9 +121,22 @@ Use **either** the plugin hooks or the vendored hooks in a repo, not both. Optio
 | `observability-and-instrumentation` · `shipping-and-launch` · `deprecation-and-migration` · `documentation-and-adrs` | logs/metrics/traces; launches; removals; decisions |
 | `source-driven-development` · `doubt-driven-development` | official docs over memory; adversarial review of decisions |
 
-Overlapping upstream skills are mapped to the kit's own (`systematic-debug`, `security-core`, `performance-core`, `session-guide`). Update with [`tools/sync_upstream_skills.py`](tools/sync_upstream_skills.py); notices in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+**Build-an-app pack — [Jakeschincariol/replica-skill](https://github.com/Jakeschincariol/replica-skill) (MIT)** · clean-room: rebuild what an app does, never its code, logo, copy or content
+| Skill | Role |
+|---|---|
+| `skills/replica-recon` | reverse-engineer an app's screens, flows, components and data model from public pages, screenshots and your own account |
+| `skills/replica-architect` · `replica-design` · `replica-build` · `replica-backend` | stack/schema/API plan; design tokens; screen-by-screen rebuild; auth, database, payments |
+| `skills/replica-test` · `replica-diff` | Playwright flow tests and bug reports; parity score and visual diff against the original |
+| `skills/replica-entrepreneur` · `replica-brand` · `replica-launch` · `replica-deploy` | what users hate in real reviews; own name and brand; landing page and store listing; ship on your domain |
 
-**Profiles** (`profiles.json`): `lite` (13 skills) for small projects · `standard` (27) for apps with real users · `full` (all 38) when the project builds in CI. Fewer skills = fewer always-loaded tokens.
+**Binary & runtime analysis — [morluto/rea](https://github.com/morluto/rea) (MIT)**
+| Skill | Role |
+|---|---|
+| `skills/reverse-engineer-anything` | decompile and compare shipped binaries, APKs, Electron/JS apps and firmware with the REA MCP server (`npx rea-agents setup`); authorized, lawful analysis only (`DISCLAIMER.md`); the kit's approval gate applies before any run against a target |
+
+Both are in the `full` profile only (niche, large). Overlapping upstream skills are mapped to the kit's own (`systematic-debug`, `security-core`, `performance-core`, `session-guide`). Update with [`tools/sync_upstream_skills.py`](tools/sync_upstream_skills.py); notices in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+**Profiles** (`profiles.json`): `lite` (13 skills) for small projects · `standard` (27) for apps with real users · `full` (all 50, including the two packs above) when the project builds in CI. Fewer skills = fewer always-loaded tokens.
 
 Also: `output-styles/caveman.md` (terse output style), `hooks/hooks.json` (plugin hooks), `agents/` (light-model sub-agents).
 
