@@ -71,9 +71,9 @@ const clouds = (w, h, seed) => `
   <rect width="100%" height="100%" filter="url(#c)" opacity=".9"/>
 </svg>`;
 
-const sticker = (scale) => `<div class="sticker" style="transform:rotate(-8deg) scale(${scale})">agent·kit</div>`;
+const sticker = (scale, up) => `<div class="sticker" style="transform:rotate(-8deg) scale(${scale})${up ? `;bottom:${up}px` : ''}">agent·kit</div>`;
 
-function page({ w, h, seed, body, wide }) {
+function page({ w, h, seed, body, wide, noSticker, stickerUp }) {
   const u = wide ? Math.min(w / 1280, h / 640) : Math.min(w, h) / 1080; // unit scale
   return `<!doctype html><html><head><meta charset="utf-8"><style>${FONT_CSS}
   *{margin:0;padding:0;box-sizing:border-box}
@@ -97,7 +97,7 @@ function page({ w, h, seed, body, wide }) {
     border:${4 * u}px solid #fff;box-shadow:0 ${6 * u}px ${12 * u}px rgba(160,20,70,.3);transform-origin:right bottom}
   .chips{display:flex;flex-wrap:wrap;gap:${10 * u}px}
   .chip{font-family:Pix;color:#fff;font-size:${30 * u}px;letter-spacing:.06em;padding:${2 * u}px ${12 * u}px;border:${2 * u}px solid rgba(255,255,255,.75);border-radius:${8 * u}px;background:rgba(255,255,255,.12)}
-  </style></head><body>${clouds(w, h, seed)}<div class="haze"></div>${body(u)}${sticker(u)}</body></html>`;
+  </style></head><body>${clouds(w, h, seed)}<div class="haze"></div>${body(u)}${noSticker ? '' : sticker(u, stickerUp)}</body></html>`;
 }
 
 // ---------- compositions ----------
@@ -110,8 +110,17 @@ const post = ({ icon, title, sub, badge }) => (u) => `
   </div>
 </div>`;
 
-const hero = ({ tagline, sub, steps }) => (u) => `
-<div class="stage" style="gap:${70 * u}px;padding:0 ${80 * u}px">
+const story = ({ icon, title, sub, badge }) => (u) => `
+<div class="stage" style="flex-direction:column;text-align:center;gap:${70 * u}px;padding:0 ${80 * u}px">
+  ${tile(icon, 280 * u, badge)}
+  <div class="pix" style="font-size:${118 * u}px">${title}</div>
+  ${sub ? `<div class="sub" style="font-size:${40 * u}px;max-width:${860 * u}px;line-height:1.4">${sub}</div>` : ''}
+</div>`;
+
+const avatar = () => (u) => `<div class="stage">${tile('chat', 470 * u, true)}</div>`;
+
+const hero = ({ tagline, sub, steps, right }) => (u) => `
+<div class="stage" style="gap:${70 * u}px;padding:0 ${80 * u}px;${right ? 'justify-content:flex-end' : ''}">
   ${tile('chat', 230 * u, true)}
   <div>
     <div class="pix" style="font-size:${150 * u}px">AGENT KIT</div>
@@ -155,14 +164,28 @@ const COPY = {
   const jobs = [];
   const out = (rel) => { const p = path.join(ROOT, rel); fs.mkdirSync(path.dirname(p), { recursive: true }); return p; };
   jobs.push({ file: 'docs/assets/banner.png', w: 1280, h: 640, seed: 7, wide: true, body: hero(COPY.en) });
-  for (const lang of ['en', 'pt']) {
-    const c = COPY[lang];
+  jobs.push({ file: 'docs/assets/social-preview.png', w: 1280, h: 640, seed: 7, wide: true, body: hero(COPY.en) });
+  // One package per language, one folder per network, only the sizes each network uses.
+  const PKG = { pt: { dir: 'pt-br', ig: 'instagram', feed: 'feed-carrossel-1080x1350', stories: 'stories-1080x1920', li: 'linkedin',
+                      liPost: 'post-1200x1200', liCover: 'capa-perfil-1584x396.jpg', liLink: 'imagem-link-1200x627.jpg', th: 'threads', thPost: 'post-carrossel-1080x1350', pdf: 'carrossel-documento-1080x1350.pdf', avatar: 'foto-perfil-1080x1080.jpg' },
+                en: { dir: 'en', ig: 'instagram', feed: 'feed-carousel-1080x1350', stories: 'stories-1080x1920', li: 'linkedin',
+                      liPost: 'post-1200x1200', liCover: 'profile-cover-1584x396.jpg', liLink: 'link-image-1200x627.jpg', th: 'threads', thPost: 'post-carousel-1080x1350', pdf: 'carousel-document-1080x1350.pdf', avatar: 'profile-photo-1080x1080.jpg' } };
+  const pdfs = [];
+  for (const lang of ['pt', 'en']) {
+    const c = COPY[lang], k = PKG[lang], base = `docs/brand/social/${k.dir}`;
+    const feed = [];
     c.posts.forEach((p, i) => {
-      jobs.push({ file: `docs/brand/social/${lang}/square/${p.id}.jpg`, w: 1080, h: 1080, seed: 11 + i, body: post(p) });
-      jobs.push({ file: `docs/brand/social/${lang}/portrait/${p.id}.jpg`, w: 1080, h: 1350, seed: 31 + i, body: post(p) });
+      const n = `${p.id}.jpg`;
+      feed.push(`${base}/${k.ig}/${k.feed}/${n}`);
+      jobs.push({ file: `${base}/${k.ig}/${k.feed}/${n}`, w: 1080, h: 1350, seed: 31 + i, body: post(p) });
+      jobs.push({ file: `${base}/${k.ig}/${k.stories}/${n}`, w: 1080, h: 1920, seed: 71 + i, stickerUp: 300, body: story(p) });
+      jobs.push({ file: `${base}/${k.th}/${k.thPost}/${n}`, w: 1080, h: 1350, seed: 31 + i, body: post(p) });
+      jobs.push({ file: `${base}/${k.li}/${k.liPost}/${n}`, w: 1200, h: 1200, seed: 11 + i, body: post(p) });
     });
-    jobs.push({ file: `docs/brand/social/${lang}/header-1500x500.jpg`, w: 1500, h: 500, seed: 51, wide: true, body: hero({ ...c, steps: null }) });
-    jobs.push({ file: `docs/brand/social/${lang}/link-1200x630.jpg`, w: 1200, h: 630, seed: 61, wide: true, body: hero(c) });
+    jobs.push({ file: `${base}/${k.ig}/${k.avatar}`, w: 1080, h: 1080, seed: 91, noSticker: true, body: avatar() });
+    jobs.push({ file: `${base}/${k.li}/${k.liCover}`, w: 1584, h: 396, seed: 51, wide: true, body: hero({ ...c, steps: null, right: true }) });
+    jobs.push({ file: `${base}/${k.li}/${k.liLink}`, w: 1200, h: 627, seed: 61, wide: true, body: hero(c) });
+    pdfs.push({ out: `${base}/${k.li}/${k.pdf}`, pages: feed });
   }
   for (const j of jobs) {
     const pg = await browser.newPage({ viewport: { width: j.w, height: j.h }, deviceScaleFactor: 1 });
@@ -173,4 +196,11 @@ const COPY = {
     console.log('wrote', j.file);
   }
   await browser.close();
+  // LinkedIn carousels are uploaded as a PDF document: one page per feed image.
+  const { execFileSync } = require('child_process');
+  for (const d of pdfs) {
+    execFileSync('python3', ['-c', 'import sys\nfrom PIL import Image\nims=[Image.open(p).convert("RGB") for p in sys.argv[2:]]\nims[0].save(sys.argv[1],save_all=True,append_images=ims[1:],resolution=144)',
+      out(d.out), ...d.pages.map((p) => path.join(ROOT, p))]);
+    console.log('wrote', d.out);
+  }
 })();

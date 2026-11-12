@@ -3,15 +3,11 @@
 Soft sky, glossy app icons, pixel lettering. Friendly, calm, a little retro; never corporate.
 
 ## Files
-| Path | Size | Use |
-|---|---|---|
-| `../assets/banner.png` | 1280×640 | README banner |
-| `../assets/social-preview.png` | 1280×640 | GitHub → Settings → Social preview |
-| `social/<en\|pt>/square/*.jpg` | 1080×1080 | Instagram / LinkedIn feed, carousel (01–06) |
-| `social/<en\|pt>/portrait/*.jpg` | 1080×1350 | Instagram portrait feed |
-| `social/<en\|pt>/header-1500x500.jpg` | 1500×500 | X / LinkedIn profile header |
-| `social/<en\|pt>/link-1200x630.jpg` | 1200×630 | Link card, LinkedIn post image |
-| `COPY.md` | — | Repository description and topics, bios, launch posts, threads, captions (PT/EN) |
+| Path | Use |
+|---|---|
+| `../assets/banner.png` · `../assets/social-preview.png` | README banner · GitHub → Settings → Social preview (1280×640) |
+| `social/pt-br/` · `social/en/` | One package per language, one folder per network (Instagram feed carousel 1080×1350, Stories 1080×1920, profile photo; Threads 1080×1350; LinkedIn PDF carousel, 1200×1200 posts, 1584×396 cover, 1200×627 link image). Captions per network in `LEGENDAS.md` / `CAPTIONS.md` |
+| `COPY.md` | Repository description, topics and the `gh repo edit` command |
 
 ## System
 - **Sky:** `#3F9CFF` → `#58ADFF` → `#86C4FF` (top to bottom), procedural clouds, white haze at the edges.
