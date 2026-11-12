@@ -1,0 +1,6 @@
+{
+  "extraKnownMarketplaces": {
+    "agent-kit": { "source": { "source": "github", "repo": "lucasouzadev/agent-kit-skill" } }
+  },
+  "enabledPlugins": { "agent-kit@agent-kit": true }
+}

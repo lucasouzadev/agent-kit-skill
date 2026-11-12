@@ -269,6 +269,26 @@ grep -q "DISCLAIMER.md" "$ROOT/skills/reverse-engineer-anything/SKILL.md" || fai
 for f in "$ROOT"/skills/replica-*/*.py; do python3 -m py_compile "$f" || fail "replica tool syntax $f"; done
 pass "imported skills (licence, notice, links)"
 
+# first-meeting welcome: once per project, kind detection, language rule, no jargon asked of the owner, opt-out
+W="$T/welcome"; mkdir -p "$W/empty" "$W/work" "$W/kit/.claude/agent-kit"; echo x > "$W/work/a.ts"; echo y > "$W/work/b.ts"; echo '{}' > "$W/work/package.json"; : > "$W/kit/AGENTS.md"
+wl() { CLAUDE_PROJECT_DIR="$1" AGENT_KIT_STATE="$T/wstate" bash "$A/welcome.sh"; }
+o="$(wl "$W/empty")"; [[ "$o" == *"project kind: new"* && "$o" == *"language of the owner's first message"* && "$o" == *"ASK which name the project folder"* ]] || fail "welcome new: $o"
+[ -z "$(wl "$W/empty")" ] || fail "welcome must show once per project"
+o="$(wl "$W/work")"; [[ "$o" == *"project kind: adopt"* && "$o" == *"ONCE"* ]] || fail "welcome adopt: $o"
+o="$(wl "$W/kit")"; [[ "$o" == *"project kind: ready"* ]] || fail "welcome ready: $o"
+rm -rf "$T/wstate"; [ -z "$(AGENT_KIT_WELCOME=0 wl "$W/empty")" ] || fail "welcome opt-out"
+[ ! -e "$W/empty/.claude" ] && [ -z "$(ls -A "$W/empty")" ] || fail "welcome must not write into the project"
+rm -rf "$T/wstate"; o="$(echo '{"session_id":"s"}' | CLAUDE_PROJECT_DIR="$W/empty" AGENT_KIT_STATE="$T/wstate" bash "$A/session-context.sh" startup)"; [[ "$o" == *"FIRST MEETING"* ]] || fail "session-context startup must carry the welcome"
+o="$(echo '{"session_id":"s"}' | CLAUDE_PROJECT_DIR="$W/empty" AGENT_KIT_STATE="$T/wstate2" bash "$A/session-context.sh" resume)"; [[ "$o" != *"FIRST MEETING"* ]] || fail "welcome only on startup"
+mkdir -p "$W/aud/.claude/agent-kit"; pa() { printf '{"session_id":"s","prompt":"quero um site para minha loja"}' | CLAUDE_PROJECT_DIR="$W/aud" bash "$A/intent-brief.sh"; }
+[[ "$(pa)" == *"guide-for-beginners"* ]] || fail "auto audience hint"
+echo beginner > "$W/aud/.claude/agent-kit/audience"; [[ "$(pa)" == *"Audience: beginner"* ]] || fail "beginner audience"
+echo dev > "$W/aud/.claude/agent-kit/audience"; [[ "$(pa)" != *"guide-for-beginners"* ]] || fail "dev audience must be silent"
+AU="$T/au"; mkdir -p "$AU" && git -C "$AU" init -q; python3 "$KIT/scripts/install.py" "$AU" --audience beginner >/dev/null; [ "$(cat "$AU/.claude/agent-kit/audience")" = beginner ] || fail "installer --audience"
+python3 "$KIT/scripts/install.py" "$AU" --audience nonsense >/dev/null 2>&1 && fail "bad audience accepted"
+[ -f "$AU/.claude/skills/guide-for-beginners/SKILL.md" ] || fail "guide-for-beginners not vendored"
+pass "welcome + audience (once, kinds, opt-out, no project writes, installer flag)"
+
 # docs stay in sync with the skills folder
 for s in "$ROOT"/skills/*/; do n="$(basename "$s")"; [ "$n" = agent-kit ] && continue; grep -qE "\`(skills/)?$n\`" "$ROOT/README.md" || fail "README does not list skill $n"; done
 pass "README lists every skill"

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.0 — 2026-11-12
+- **First-meeting welcome** (`welcome.sh`, called by `session-context.sh` on startup): once per project per user (marker in the kit's state dir, never in the repo) the agent is told to greet in 3 lines, in the language of the person's first message, with one open question and no jargon. Detects `new` (empty folder → interview, then ASK the folder name and create it only after a yes), `adopt` (existing work → ask once to organize it with the installer) and `ready` (kit present → usual briefing). `AGENT_KIT_WELCOME=0` disables.
+- **`guide-for-beginners` skill**: chat for people who do not code — plain words, the agent decides technical details, one product question at a time, results instead of code, small problems fixed silently, human progress stages instead of track numbers; switches to terse mode when the person writes like a developer.
+- `intent-brief` adds a one-line audience reminder every message (so nothing depends on the person remembering); `.claude/agent-kit/audience` = `beginner` | `dev` | `auto` (default), written by `install.py --audience`. The canary question is skipped for people who write in everyday words.
+- `standard/ONBOARDING.md`, `templates/claude-settings.beginner.json` (marketplace + plugin enabled in a committed project settings file), `NO-HOOKS` and `00-MAP` rows. Skill in `lite` and `standard` profiles (14 / 28; `full` 51).
+
 ## 1.10.0 — 2026-11-12
 - **`replica-*` pack (11 skills)** from Jakeschincariol/replica-skill (MIT): recon → architect → design → build → backend → test → diff → entrepreneur → brand → launch → deploy, with their stdlib-only Python tools (kept side by side: they call each other by sibling path). Clean-room limits travel with them.
 - **`reverse-engineer-anything`** from morluto/rea (MIT): the agent skill and its references plus `DISCLAIMER.md`; the REA MCP server is not bundled (`npx rea-agents setup`). Notice line states: authorized analysis only, approval gate applies.

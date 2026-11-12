@@ -12,7 +12,8 @@
     "self-heal",
     "ci-monitor",
     "incremental-implementation",
-    "test-driven-development"
+    "test-driven-development",
+    "guide-for-beginners"
   ],
   "standard": [
     "caveman",
@@ -41,7 +42,8 @@
     "test-driven-development",
     "code-review-and-quality",
     "git-workflow-and-versioning",
-    "code-simplification"
+    "code-simplification",
+    "guide-for-beginners"
   ],
   "full": "*"
 }

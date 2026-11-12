@@ -53,6 +53,11 @@ have=lambda s: not roots or any(os.path.isfile(os.path.join(r,s,"SKILL.md")) for
 req=[s for s in REQ.get(mode,[]) if have(s)]
 sk=", ".join(req)
 if req: extra=f" MANDATORY TRACK (docs/agents/standard/TRACK.md): load these skills with the Skill tool before the stage they serve: {sk}. Failures inside an approved task: self-heal without asking; after a push: ci-monitor in the background."+extra
+aud=""
+try: aud=open(os.path.join(os.environ.get("CLAUDE_PROJECT_DIR") or ".",".claude","agent-kit","audience")).read().strip().lower()
+except Exception: pass
+if aud=="beginner": extra+=" Audience: beginner. Follow skill guide-for-beginners: plain words, no commands or jargon, you decide the technical details, one product question at a time, show results not code."
+elif aud!="dev": extra+=" If the owner writes in everyday words (no code, paths or jargon), follow skill guide-for-beginners: plain language, no commands, you decide the technical details, ask only product questions, show results not code; if they write like a developer, stay terse."
 print(f"[agent-kit] Before acting, silently compile the owner message into a brief (skill intent-compiler: goal, context from repo/handoff, acceptance, constraints, mode, skills, one blocking question at most). Likely mode: {mode}{" (no clear signal: infer it from the message and the repo)" if mode=="unknown" else ""}. Do not show the brief unless asked; restate only goal + acceptance in one line when non-trivial.{extra}")
 '
 exit 0
