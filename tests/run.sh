@@ -203,6 +203,69 @@ if command -v ffmpeg >/dev/null 2>&1; then
   pass "media-investigation frames"
 else echo "SKIP media-investigation frames (ffmpeg not installed)"; fi
 
+# mandatory track: session banner, required skills per mode, Stop gate, light sub-agents
+out="$(echo '{"session_id":"s"}' | bash "$A/session-context.sh" startup)"; [[ "$out" == *"MANDATORY TRACK"*"self-heal"*"ci-monitor"* ]] || fail "session banner lacks the track"
+out="$(echo '{"session_id":"s"}' | bash "$A/session-context.sh" compact)"; [[ "$out" == *"MANDATORY TRACK"* ]] || fail "track not re-injected after compaction"
+o="$(echo '{"session_id":"s","prompt":"adiciona um botao de compartilhar"}' | bash "$A/intent-brief.sh")"; [[ "$o" == *"MANDATORY TRACK"*"incremental-implementation"*"test-driven-development"* ]] || fail "intent-brief required skills: $o"
+o="$(echo '{"session_id":"s","prompt":"o login quebrou"}' | bash "$A/intent-brief.sh")"; [[ "$o" == *"systematic-debug"*"self-heal"* ]] || fail "intent-brief Fixer skills: $o"
+for a in fixer-lite ci-watcher; do grep -q '^model: haiku' "$P/.claude/agents/$a.md" || fail "sub-agent $a not installed on the light model"; done
+python3 -c "import json;d=json.load(open('$P/.claude/settings.json'))['hooks'];assert 'track-gate.sh' in json.dumps(d['Stop'])" || fail "Stop hook not wired"
+grep -q 'track-gate.sh' "$ROOT/hooks/hooks.json" || fail "plugin Stop hook"
+tg() { python3 -c 'import json,sys; print(json.dumps({"session_id":"s","transcript_path":sys.argv[1],"stop_hook_active":sys.argv[2]=="1"}))' "$1" "${2:-0}" | bash "$A/track-gate.sh"; }
+tr_() { python3 - "$T/tr.jsonl" "$@" <<'PYT'
+import json,sys
+out,edit,final=sys.argv[1],sys.argv[2],sys.argv[3]
+L=[{"type":"user","message":{"role":"user","content":"old task"}},
+   {"type":"assistant","message":{"content":[{"type":"tool_use","name":"Edit","input":{}}]}},
+   {"type":"assistant","message":{"content":[{"type":"text","text":"old: PASS"}]}},
+   {"type":"user","message":{"role":"user","content":"faz o ajuste"}}]
+if edit!="none": L.append({"type":"assistant","message":{"content":[{"type":"tool_use","name":edit,"input":{"command":"git commit -m x"}}]}})
+L.append({"type":"user","message":{"content":[{"type":"tool_result","content":"ok"}]}})
+L.append({"type":"assistant","message":{"content":[{"type":"text","text":final}]}})
+L.append({"type":"assistant","isSidechain":True,"message":{"content":[{"type":"tool_use","name":"Write","input":{}}]}})
+open(out,"w").write("\n".join(json.dumps(x) for x in L)+"\n")
+PYT
+}
+tr_ Edit "Pronto, ajustei o botao."; [[ "$(tg "$T/tr.jsonl")" == *'"decision": "block"'* ]] || fail "track-gate let an edit close without evidence"
+[[ "$(tg "$T/tr.jsonl")" != *"botao"* ]] || fail "track-gate echoed transcript text"
+[ -z "$(tg "$T/tr.jsonl" 1)" ] || fail "track-gate must not loop (stop_hook_active)"
+tr_ Edit "Tests: PASS (npm test, 12 passed)"; [ -z "$(tg "$T/tr.jsonl")" ] || fail "track-gate blocked a reply with evidence"
+tr_ none "Plano: ..."; [ -z "$(tg "$T/tr.jsonl")" ] || fail "track-gate blocked a turn without edits"
+tr_ Bash "Commit feito."; [[ "$(tg "$T/tr.jsonl")" == *"block"* ]] || fail "track-gate missed a git commit"
+tr_ Edit "x"; [ -z "$(AGENT_KIT_TRACK_GATE=0 tg "$T/tr.jsonl")" ] || fail "track-gate opt-out"
+[ -z "$(echo '{"session_id":"s","transcript_path":"/nonexistent"}' | bash "$A/track-gate.sh")" ] || fail "track-gate must fail open"
+pass "mandatory track (banner, required skills, Stop gate, light sub-agents)"
+
+# ci_watch.py with a fake gh (green, defect, infra, no gh)
+FB="$T/fakegh"; mkdir -p "$FB"; cat > "$FB/gh" <<'GH'
+#!/usr/bin/env bash
+case "$*" in
+  "run list"*) cat "$FAKE_RUNS";;
+  "run view"*"--json jobs"*) echo '{"jobs":[{"name":"test","conclusion":"failure"},{"name":"lint","conclusion":"success"}]}';;
+  "run view"*"--log-failed"*) printf 'test\tRun tests\t2026-01-01T00:00:00.0Z %s\n' "$FAKE_LOG";;
+esac
+GH
+chmod +x "$FB/gh"; CW="$A/ci_watch.py"
+echo '[{"databaseId":1,"name":"ci","workflowName":"ci","status":"completed","conclusion":"success","url":"u1","event":"push"}]' > "$T/runs.json"
+PATH="$FB:$PATH" FAKE_RUNS="$T/runs.json" python3 "$CW" --sha abc >/dev/null || fail "ci_watch green"
+echo '[{"databaseId":2,"name":"ci","workflowName":"ci","status":"completed","conclusion":"failure","url":"u2","event":"push"}]' > "$T/runs.json"
+o="$(PATH="$FB:$PATH" FAKE_RUNS="$T/runs.json" FAKE_LOG="AssertionError: expected 2 to equal 3" python3 "$CW" --sha abc)" && fail "ci_watch failure exit"
+[[ "$o" == *"jobs test -> defect"*"AssertionError"* && "$o" != *"2026-01-01"* ]] || fail "ci_watch defect: $o"
+o="$(PATH="$FB:$PATH" FAKE_RUNS="$T/runs.json" FAKE_LOG="Error: connect ETIMEDOUT 1.2.3.4:443" python3 "$CW" --sha abc || true)"; [[ "$o" == *"infra (re-run candidate)"* ]] || fail "ci_watch infra: $o"
+echo '[]' > "$T/runs.json"; rc=0; PATH="$FB:$PATH" FAKE_RUNS="$T/runs.json" python3 "$CW" --sha abc >/dev/null || rc=$?; [ "$rc" = 2 ] || fail "ci_watch no runs ($rc)"
+rc=0; PATH="$B" "$B/python" "$CW" --sha abc >/dev/null 2>&1 || rc=$?; [ "$rc" = 3 ] || fail "ci_watch without gh ($rc)"
+pass "ci_watch (green, defect, infra, no runs, no gh)"
+
+# imported skills: licence travels with each one, links resolve inside the skill folder, precedence notice
+for d in "$ROOT"/skills/*/; do
+  grep -q "Imported from \[addyosmani/agent-skills\]" "$d/SKILL.md" 2>/dev/null || continue
+  [ -f "$d/LICENSE.txt" ] || fail "imported skill without licence: $d"
+  grep -q "AGENTS.md" "$d/SKILL.md" || fail "imported skill without precedence notice: $d"
+  grep -rq '\.\./\.\./references/' "$d" && fail "imported skill links outside its folder: $d"
+  for r in $(grep -ohE '\(?`?references/[A-Za-z0-9_.-]+\.md' "$d/SKILL.md" | sed -E 's/^[(`]+//' | sort -u); do [ -f "$d/$r" ] || fail "broken link $d$r"; done
+done
+pass "imported skills (licence, notice, links)"
+
 # docs stay in sync with the skills folder
 for s in "$ROOT"/skills/*/; do n="$(basename "$s")"; [ "$n" = agent-kit ] && continue; grep -qE "\`(skills/)?$n\`" "$ROOT/README.md" || fail "README does not list skill $n"; done
 pass "README lists every skill"

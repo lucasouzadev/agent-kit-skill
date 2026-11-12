@@ -8,6 +8,8 @@ Read `AGENTS.md` first (single entry point), then the session state file it name
 This tool has no agent-kit hooks, so do their duties by hand: `docs/agents/standard/NO-HOOKS.md`.
 
 Always:
+- Walk the track in `docs/agents/standard/TRACK.md` (Boot → Brief → Plan → yes → Build → Self-heal → Verify → Push + watch CI → Close); open the skill each stage names in `.claude/skills/` and follow it.
+- Inside an approved task, fix small in-scope failures (lint/type/tests from your change, simulator/emulator, caches, ports, flaky steps, red CI on the feature branch) without asking; max 2 attempts per cause.
 - Present a plan and wait for the owner's explicit "yes" before the first edit, commit, migration, deploy or config change.
 - Ask before push to the default branch, force-push, deploy, real builds/releases, publishing, destructive SQL/infra, or printing a secret.
 - Compile every owner message into a private brief (goal, repo context, acceptance, constraints, mode); show only goal + acceptance.

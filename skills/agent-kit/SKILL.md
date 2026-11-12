@@ -5,7 +5,7 @@ description: Sets up or upgrades a repository's AI-agent documentation standard 
 
 # agent-kit — adopt the standard in a repository
 
-Principle: a short core loaded every session, everything else opened by task. The owner starts sessions with a short message; agents boot from `AGENTS.md` + the handoff, with no kickoff prompt.
+Principle: a short core loaded every session, everything else opened by task, and one **mandatory track** (`standard/TRACK.md`) enforced by hooks. The owner starts sessions with a short message; agents boot from `AGENTS.md` + the handoff, with no kickoff prompt.
 
 ## Steps (the approval gate applies: present the plan before writing)
 
@@ -14,25 +14,27 @@ Principle: a short core loaded every session, everything else opened by task. Th
 3. **Install** (after approval):
    `python3 ${CLAUDE_SKILL_DIR}/scripts/install.py <repo> [--public-ci] [--no-vendor] [--dry-run]`
    (`CLAUDE_SKILL_DIR` = this skill's folder; outside Claude Code use the path where the kit lives). Run with `--dry-run` first. Use `--no-vendor` when the agent-kit plugin is installed; vendor (default) when sessions run where plugins are not installed, e.g. cloud sessions or teammates.
-4. **Fill** every `{{PLACEHOLDER}}` in `AGENTS.md` (project summary, commands, invariants, map, do-not-reopen, owner language, build rules). Keep it ≤ 120 lines.
-5. **Resolve** every `SKIP` line by diffing by hand; keep project-specific variants of skills.
-6. **Handoff path** not at `HANDOFF.md` / `docs/agents/HANDOFF.md`? Write the paths (files or folders) to `.claude/agent-kit/handoff-paths`.
-7. **Verify:** `bash .claude/agent-kit/session-context.sh startup` prints the state; `.claude/settings.json` is valid JSON; relative links in new files resolve; no secret, personal data or canary value in the diff.
+4. **Merge the track** when the repo already had `AGENTS.md`/`CLAUDE.md` (installer prints `hint … predates the mandatory track`): add AGENTS.md §0b + the self-heal line of §1 and the CLAUDE.md operating contract from `templates/`. Without them the hooks still enforce, but sub-agents in other tools will not see the track.
+5. **Fill** every `{{PLACEHOLDER}}` in `AGENTS.md` (project summary, commands, invariants, map, do-not-reopen, owner language, build rules). Keep it ≤ 120 lines.
+6. **Resolve** every `SKIP` line by diffing by hand; keep project-specific variants of skills.
+7. **Handoff path** not at `HANDOFF.md` / `docs/agents/HANDOFF.md`? Write the paths (files or folders) to `.claude/agent-kit/handoff-paths`.
+8. **Verify:** `bash .claude/agent-kit/session-context.sh startup` prints the state; `.claude/settings.json` is valid JSON; relative links in new files resolve; no secret, personal data or canary value in the diff.
 
 ## What gets installed
 | Path | Role |
 |---|---|
 | `AGENTS.md`, `CLAUDE.md` (`@AGENTS.md`) | entry points (created only if missing) |
-| `docs/agents/standard/` | generic rules: map, modes, workflow, quality gates, done, safeguards, contracts, handoff, rework ledger, orchestration, threat model, context budget, canary, security/performance invariants |
+| `docs/agents/standard/` | generic rules: **track**, map, modes, workflow, quality gates, done, safeguards, contracts, handoff, rework ledger, orchestration, threat model, context budget, canary, security/performance invariants |
 | `docs/agents/OWNER_DECISIONS.md` | dated log of standing owner instructions |
 | `.claude/settings.json` (merged) | `outputStyle: caveman`, `autoCompactWindow` 200k + env fallback, statusline, hooks |
-| `.claude/agent-kit/` | `session-context.sh` (SessionStart), `precompact.sh` (PreCompact), `usage-guard.sh` (UserPromptSubmit), `statusline.sh` (context + plan usage), `manifest.json` |
+| `.claude/agent-kit/` | `session-context.sh` (SessionStart: state + track), `intent-brief.sh` (UserPromptSubmit: brief + required skills per mode), `track-gate.sh` (Stop: no evidence after edits → back to work), `action-guard.sh` / `pr-gate.sh` (PreToolUse), `precompact.sh`, `usage-guard.sh`, `statusline.sh`, `ci_watch.py` (CI watcher), `manifest.json` |
+| `.claude/agents/` | light-model sub-agents: `fixer-lite` (self-heal), `ci-watcher` (background CI monitor); both `model: haiku` |
 | `.claude/skills/`, `.claude/output-styles/` | vendored copies (skip with `--no-vendor`) |
 
 ## Options
 - `--pr-quality local|ci`: PR template, `.github/pr-quality.json` and `.github/scripts/pr_quality.py` (agents lint the PR body offline); `ci` adds the check workflow. Choose `local` on private repos with scarce Actions minutes. Keep the project's own PR template if it has one (create-only) and mirror its headings in `pr-quality.json`.
 - Check for updates: `python3 .claude/agent-kit/update.py check` (explicit network call).
-- `--profile lite|standard|full`: how many kit skills to vendor (7 / 15 / all). Recommend **lite** to newcomers and small projects, **standard** for apps with real users, **full** when the project builds in CI. Remembered in `.claude/agent-kit/profile`.
+- `--profile lite|standard|full`: how many kit skills to vendor (see `profiles.json`; full = all, including the 17 imported from addyosmani/agent-skills). Recommend **lite** to newcomers and small projects, **standard** for apps with real users, **full** when the project builds in CI. Remembered in `.claude/agent-kit/profile`.
 - `--cursor`: write `.cursor/rules/agent-kit.mdc` (automatic when `.cursor/` exists). Tools without hooks follow `docs/agents/standard/NO-HOOKS.md`.
 - `guard-allow` / `guard-extra` in `.claude/agent-kit/`: standing authorizations (e.g. `eas build .*simulator`) and project-specific risky commands for the `action-guard` hook.
 - `--with-guard`: CI workflow that fails PRs changing kit hooks outside the installer; add CODEOWNERS for `.claude/`. Skip it on private repos without Actions minutes.

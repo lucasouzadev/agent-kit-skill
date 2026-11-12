@@ -9,10 +9,11 @@ What it does
   * docs/agents/standard/          kit-owned docs, always refreshed
   * .claude/agent-kit/             hooks + statusline, always refreshed
   * .claude/settings.json          merged: adds missing agent-kit keys, never overwrites yours
-  * .claude/output-styles/caveman.md and .claude/skills/<kit skills>/   (unless --no-vendor)
+  * .claude/output-styles/caveman.md, .claude/skills/<kit skills>/ and .claude/agents/ (light-model
+    sub-agents fixer-lite + ci-watcher)   (unless --no-vendor)
   * AGENTS.md, CLAUDE.md, docs/agents/OWNER_DECISIONS.md   created only if missing
 
---profile: which skills to vendor (lite 7 · standard 15 · full 17+; default full or the last choice, kept in
+--profile: which skills to vendor (see profiles.json: lite · standard · full = all; default full or the last choice, kept in
 .claude/agent-kit/profile). Skills already installed are never removed, only reported.
 --pr-quality: PR template + .github/pr-quality.json + .github/scripts/pr_quality.py (create-only for
 template/config). 'ci' also adds the pr-quality workflow (no secrets; script and config are read from the base
@@ -144,6 +145,10 @@ def main(argv):
             for f in sorted(sd.rglob("*")):
                 if f.is_file():
                     put(f, f".claude/skills/{sd.name}/{f.relative_to(sd)}", True)
+        # light-model sub-agents (fixer-lite, ci-watcher) used by the self-heal and ci-monitor skills
+        for f in sorted((KIT_ROOT / "agents").glob("*.md")) if (KIT_ROOT / "agents").is_dir() else []:
+            if f.stem not in skip:
+                put(f, f".claude/agents/{f.name}", True)
     # 4. settings merge
     settings_src = json.loads((SKILL_DIR / "assets/claude/settings.json").read_text())
     if not vendor:
@@ -202,6 +207,10 @@ def main(argv):
     put(tpl / ("AGENTS.public-ci.md" if public else "AGENTS.md"), "AGENTS.md", False)
     put(tpl / "CLAUDE.md", "CLAUDE.md", False)
     put(tpl / "OWNER_DECISIONS.md", "docs/agents/OWNER_DECISIONS.md", False)
+    for rel, mark in (("AGENTS.md", "TRACK.md"), ("CLAUDE.md", "TRACK.md")):
+        f = target / rel
+        if f.exists() and mark not in f.read_text(errors="replace"):
+            log.append(f"hint   {rel} predates the mandatory track: merge the track/self-heal sections from templates/{rel} (kept yours)")
     tmp = target / ".claude/agent-kit/.tmp-put"
     if tmp.exists():
         tmp.unlink()

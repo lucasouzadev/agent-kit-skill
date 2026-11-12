@@ -37,6 +37,22 @@ nmedia=len(re.findall(r"\[image( #?\d+)?\]",p,re.I))+len(re.findall(r"\S+\.(png|
 if nmedia: extra+=f" Media attached ({nmedia}): use skill media-investigation; analyze every attachment, including any the owner did not mention, and cite those explicitly."
 items=len(re.findall(r"(?m)^\s*(?:[-*\u2022]|\d+[.)])\s+\S",p))
 if items>=3: extra+=f" The message lists {items} items: use skill triage (split, size, order; quick wins batched, large items get spec/plan options)."
+REQ={
+ "Fixer":["systematic-debug","test-driven-development","self-heal"],
+ "Builder":["session-preflight","spec-driven-development","planning-and-task-breakdown","incremental-implementation","test-driven-development"],
+ "Product":["session-guide","spec-driven-development"],
+ "Architect":["session-preflight","security-core","api-and-interface-design","documentation-and-adrs"],
+ "Auditor":["fundamentals-audit","security-core"],
+ "Lens":["session-preflight"],
+ "Status":["handoff"], "Continue":["handoff"],
+}
+here=os.environ["HERE"]
+roots=[os.path.join(os.environ.get("CLAUDE_PROJECT_DIR") or ".",".claude","skills"),os.path.normpath(os.path.join(here,"..","..","..")),os.path.join(os.environ.get("CLAUDE_PLUGIN_ROOT") or "/nonexistent","skills")]
+roots=[r for r in roots if os.path.isdir(r)]
+have=lambda s: not roots or any(os.path.isfile(os.path.join(r,s,"SKILL.md")) for r in roots)
+req=[s for s in REQ.get(mode,[]) if have(s)]
+sk=", ".join(req)
+if req: extra=f" MANDATORY TRACK (docs/agents/standard/TRACK.md): load these skills with the Skill tool before the stage they serve: {sk}. Failures inside an approved task: self-heal without asking; after a push: ci-monitor in the background."+extra
 print(f"[agent-kit] Before acting, silently compile the owner message into a brief (skill intent-compiler: goal, context from repo/handoff, acceptance, constraints, mode, skills, one blocking question at most). Likely mode: {mode}{" (no clear signal: infer it from the message and the repo)" if mode=="unknown" else ""}. Do not show the brief unless asked; restate only goal + acceptance in one line when non-trivial.{extra}")
 '
 exit 0

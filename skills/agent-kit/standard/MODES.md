@@ -1,6 +1,6 @@
 # MODES — Pick one from the request, escalate when the mode says so
 
-All modes share: approval gate before writing, caveman output, evidence states, handoff at the end. A mixed request starts with the dominant mode.
+All modes share: the mandatory track (`TRACK.md`), approval gate before writing, self-heal of small in-scope defects without asking, caveman output, evidence states, handoff at the end. A mixed request starts with the dominant mode.
 
 | Signals | Mode |
 |---|---|

@@ -8,7 +8,11 @@
     "systematic-debug",
     "security-core",
     "triage",
-    "media-investigation"
+    "media-investigation",
+    "self-heal",
+    "ci-monitor",
+    "incremental-implementation",
+    "test-driven-development"
   ],
   "standard": [
     "caveman",
@@ -28,7 +32,16 @@
     "platform-security",
     "pr-quality",
     "media-investigation",
-    "triage"
+    "triage",
+    "self-heal",
+    "ci-monitor",
+    "spec-driven-development",
+    "planning-and-task-breakdown",
+    "incremental-implementation",
+    "test-driven-development",
+    "code-review-and-quality",
+    "git-workflow-and-versioning",
+    "code-simplification"
   ],
   "full": "*"
 }
