@@ -13,6 +13,7 @@ Why: measured boots in the source repos cost 12k–88k tokens before any work, a
 | Task | Read |
 |---|---|
 | Choosing what to do next | project STATUS file |
+| First meeting, empty folder, someone who does not code, "quero um app que…" | skill `guide-for-beginners`, `ONBOARDING.md` |
 | Any task: which stage am I in, which skill now | `TRACK.md` |
 | A check, build, simulator, emulator or CI step failed during approved work | skill `self-heal` (sub-agent `fixer-lite`) — no question to the owner |
 | After a push / "did CI pass?" | skill `ci-monitor` (sub-agent `ci-watcher`, background) |

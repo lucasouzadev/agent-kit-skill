@@ -32,7 +32,8 @@ cat <<'TRACK'
   → 6 Verify/G2 (evidence states) → 7 Push feature branch + watch CI in background (skill ci-monitor, sub-agent ci-watcher) → 8 Close (handoff, test list).
   Load the named skill before each stage (Skill tool). AGENTS.md overrides any skill. Detail: docs/agents/standard/TRACK.md
 TRACK
-[ "$event" = startup ] && echo "[agent-kit] Canary: use the form of address the owner gives in this session; if none yet, ask once."
+[ "$event" = startup ] && [ -f "$here/welcome.sh" ] && bash "$here/welcome.sh"
+[ "$event" = startup ] && echo "[agent-kit] Canary: use the form of address the owner gives in this session; if none yet, ask once (skip this for a person who writes in everyday words: do not mention it)."
 if git rev-parse --git-dir >/dev/null 2>&1; then
   echo "branch: $(git branch --show-current 2>/dev/null)  dirty files: $(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
   echo "last commits:"; git log --oneline -5 2>/dev/null | sed 's/^/  /'

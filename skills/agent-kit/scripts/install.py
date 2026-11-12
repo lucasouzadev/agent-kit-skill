@@ -3,7 +3,7 @@
 
 Usage:
   python3 install.py <target-repo> [--public-ci] [--no-vendor] [--profile lite|standard|full]
-                             [--with-guard] [--pr-quality local|ci] [--cursor] [--dry-run]
+                             [--with-guard] [--pr-quality local|ci] [--audience beginner|dev|auto] [--cursor] [--dry-run]
 
 What it does
   * docs/agents/standard/          kit-owned docs, always refreshed
@@ -18,6 +18,8 @@ What it does
 --pr-quality: PR template + .github/pr-quality.json + .github/scripts/pr_quality.py (create-only for
 template/config). 'ci' also adds the pr-quality workflow (no secrets; script and config are read from the base
 branch). Use 'local' where Actions minutes are scarce: agents lint the PR body offline.
+--audience: who the agent talks to (written to .claude/agent-kit/audience): beginner = always plain language,
+dev = never, auto (default) = adapts to how the person writes. See standard/ONBOARDING.md.
 --cursor: also write .cursor/rules/agent-kit.mdc (automatic when .cursor/ exists).
 --with-guard: adds .github/workflows/agent-kit-guard.yml (fails PRs that change kit hooks
 without re-running the installer) and suggests a CODEOWNERS entry for .claude/.
@@ -60,6 +62,10 @@ def main(argv):
     prq = next((argv[i + 1] for i, a in enumerate(argv) if a == "--pr-quality" and i + 1 < len(argv)), None)
     if prq not in (None, "local", "ci"):
         print("--pr-quality takes 'local' or 'ci'")
+        return 2
+    aud = next((argv[i + 1] for i, a in enumerate(argv) if a == "--audience" and i + 1 < len(argv)), None)
+    if aud not in (None, "beginner", "dev", "auto"):
+        print("--audience takes 'beginner', 'dev' or 'auto'")
         return 2
     cursor = "--cursor" in argv or (target / ".cursor").is_dir()
     profile = next((argv[i + 1] for i, a in enumerate(argv) if a == "--profile" and i + 1 < len(argv)), None)
@@ -200,6 +206,11 @@ def main(argv):
             put(gh / "pr-quality.yml", ".github/workflows/pr-quality.yml", True)
         else:
             log.append("note   pr-quality: local only (no workflow). Agents lint the PR body with .github/scripts/pr_quality.py; use --pr-quality ci to add the check")
+    if aud and not dry:
+        af = target / ".claude/agent-kit/audience"
+        af.parent.mkdir(parents=True, exist_ok=True)
+        af.write_text(aud + "\n")
+        log.append(f"write  .claude/agent-kit/audience ({aud})")
     # 4c. rules for tools without hooks
     if cursor:
         put(SKILL_DIR / "templates/cursor-agent-kit.mdc", ".cursor/rules/agent-kit.mdc", True)

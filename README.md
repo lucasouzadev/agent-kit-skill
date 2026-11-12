@@ -5,9 +5,9 @@
 <p align="center">
   <a href="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-1.10.0-orange.svg"></a>
+  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-1.11.0-orange.svg"></a>
   <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-d97757.svg">
-  <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-50-6b5bff.svg">
+  <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-51-6b5bff.svg">
   <img alt="Works with AGENTS.md" src="https://img.shields.io/badge/AGENTS.md-compatible-2ea44f.svg">
   <img alt="Codex · Cursor" src="https://img.shields.io/badge/Codex%20%C2%B7%20Cursor-supported-555.svg">
 </p>
@@ -90,6 +90,7 @@ Use **either** the plugin hooks or the vendored hooks in a repo, not both. Optio
 | `skills/agent-kit/` | setup skill: `templates/`, `standard/` docs, `assets/claude/` (settings, hooks, statusline), `scripts/install.py` |
 | `skills/self-heal` | fix small in-scope defects without stopping or asking; simulator/emulator/cache playbook; delegates to `fixer-lite` |
 | `skills/ci-monitor` | watch Actions runs after each push on a light model (`ci-watcher`), classify, heal the feature branch |
+| `skills/guide-for-beginners` | chat for people who do not code: automatic first-meeting welcome in the person's language, no commands or jargon, the agent decides the technical, asks the folder name for a new project |
 | `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time |
 | `skills/intent-compiler` | invisible talk → brief conversion before acting |
 | `skills/session-preflight` | session packet before acting |
@@ -136,15 +137,18 @@ Use **either** the plugin hooks or the vendored hooks in a repo, not both. Optio
 
 Both are in the `full` profile only (niche, large). Overlapping upstream skills are mapped to the kit's own (`systematic-debug`, `security-core`, `performance-core`, `session-guide`). Update with [`tools/sync_upstream_skills.py`](tools/sync_upstream_skills.py); notices in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-**Profiles** (`profiles.json`): `lite` (13 skills) for small projects · `standard` (27) for apps with real users · `full` (all 50, including the two packs above) when the project builds in CI. Fewer skills = fewer always-loaded tokens.
+**Profiles** (`profiles.json`): `lite` (14 skills) for small projects · `standard` (28) for apps with real users · `full` (all 51, including the two packs above) when the project builds in CI. Fewer skills = fewer always-loaded tokens.
 
 Also: `output-styles/caveman.md` (terse output style), `hooks/hooks.json` (plugin hooks), `agents/` (light-model sub-agents).
 
 ## Standard docs
 `TRACK` · `00-MAP` · `MODES` (Fixer, Builder, Product, Architect, Lens, Auditor) · `WORKFLOW` · `QUALITY-GATES` (G1/G2) · `DONE` · `SAFEGUARDS` · `TASK-CONTRACT` · `HANDOFF-TEMPLATE` · `REWORK-LEDGER` · `OWNER-DECISIONS-TEMPLATE` · `ORCHESTRATION` · `THREAT-MODEL` · `CHANGELOG-GUIDE` · `CONTEXT-BUDGET` · `CANARY` · `CONVERSATION` · `NO-HOOKS` · `SECURITY-PERFORMANCE`
 
+## For people who do not code
+No `/commands`, no prompts. On the first message of a project the agent greets in 3 lines, in the language the person wrote, and asks one open question; it detects an empty folder (interview → asks the folder name → builds), existing work (asks once to organize it) or a project that already has the kit. From then on every message carries a one-line reminder to stay in plain words (`--audience beginner|dev|auto`, default adapts to how the person writes), so nothing depends on remembering anything. Small problems are fixed silently; results are shown, not code. Details: [`ONBOARDING.md`](skills/agent-kit/standard/ONBOARDING.md). To get the kit without typing commands, commit [`claude-settings.beginner.json`](skills/agent-kit/templates/claude-settings.beginner.json) as `.claude/settings.json` (one trust prompt on first open) or vendor it with the installer.
+
 ## More features
-- **Meeting-style sessions:** plain talk becomes an invisible brief; no prompt engineering needed.
+- **Meeting-style sessions** (see above): plain talk becomes an invisible brief; no prompt engineering needed.
 - **Pass the baton:** statusline shows weekly/5-hour usage; near the limit the agent offers a self-contained continuation prompt for any IDE or model.
 - **Early, lossless compaction** at 200k tokens with state re-injection.
 - **Approval gate enforced** (`action-guard`): a seatbelt, not a sandbox.
