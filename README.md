@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="Agent Kit — a mandatory, hook-enforced work track for AI coding agents: Boot, Brief, Plan, Approve, Build, Self-heal, Verify, Watch CI, Close" width="100%">
+  <img src="docs/assets/banner.png" alt="Agent Kit — a mandatory, hook-enforced work track for AI coding agents: Boot, Brief, Plan, Approve, Build, Self-heal, Verify, Watch CI, Close" width="100%">
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 # Agent Kit
 
-**A mandatory, hook-enforced work track for AI coding agents** — Claude Code, Codex, Cursor and any tool that reads `AGENTS.md`. Packaged as a Claude Code plugin and as plain [Agent Skills](https://agentskills.io), installable into any repository with one command.
+**Just talk, it codes.** A mandatory, hook-enforced work track for AI coding agents — Claude Code, Codex, Cursor and any tool that reads `AGENTS.md`. Packaged as a Claude Code plugin and as plain [Agent Skills](https://agentskills.io), installable into any repository with one command.
 
 Agents ignore rules they only *read about*. Agent Kit turns the rules into a **track** that hooks print, check and enforce; lets the agent **fix small defects on its own** (simulator crashed, cache stale, test broken by its own change) instead of stopping to ask; and **watches CI in the background on a light model** so "pushed" becomes "green".
 
@@ -169,6 +169,9 @@ No `/commands`, no prompts. On the first message of a project the agent greets i
 - `autoCompactWindow` / `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (100k–1M). If a Claude Code version ignores them from project settings, put them in `~/.claude/settings.json`.
 - Plugins cannot set `outputStyle`, `env` or `statusLine`; the installer writes those to the project settings.
 - Canary: optional weak signal that the agent loaded the rules (a form of address used in every reply, never written to files).
+
+## Brand
+Banner, social images (PT/EN), launch copy and the generator live in [`docs/brand/`](docs/brand/README.md).
 
 ## Contributing
 Run `bash tests/run.sh` before a PR (CI runs it too). See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). License: [MIT](LICENSE).

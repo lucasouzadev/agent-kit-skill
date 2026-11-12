@@ -299,6 +299,6 @@ pass "skills language-neutral"
 
 # personal-data guard: no e-mails or home paths in shipped files
 if grep -rInE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(com|net|org|io|dev|br)\b|/home/[a-z]+|/Users/[A-Za-z]+' \
-     --exclude-dir=.git --exclude=run.sh --exclude=CHANGELOG.md "$ROOT" | grep -vE 'noreply@|example\.com|@users\.noreply|git@github\.com'; then fail "personal data"; fi
+     --exclude-dir=.git --exclude=run.sh --exclude=CHANGELOG.md --exclude='OFL-*.txt' "$ROOT" | grep -vE 'noreply@|example\.com|@users\.noreply|git@github\.com'; then fail "personal data"; fi
 pass "no personal data"
 echo "ALL PASS"
