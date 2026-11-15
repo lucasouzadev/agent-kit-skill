@@ -9,6 +9,7 @@ The stages and their required skills are fixed in `TRACK.md`; this file details 
 - Verify state yourself: git, PRs, plan checkboxes, live config. Status cells and handoffs age.
 
 ## 2. Plan (QUALITY-G1)
+Decisions and the approval are asked with the AskUserQuestion tool (options, recommendation first).
 Surface map, risks, tests designed before the solution, delivery channel, rollback. See `QUALITY-GATES.md`. Present the plan and **stop** until the owner approves. Record the approval in the handoff ("approved <date>: <what>") so compaction cannot lose it.
 
 ## 3. Execute
@@ -22,6 +23,7 @@ Self-review the diff, run the real checks, open and read screenshots, record PAS
 
 ## 5. Deliver
 - Commit: imperative mood, explain *why*. Branch/PR per the session's instructions; never merge on your own; never force-push a shared branch.
+- Before suggesting PR/branch actions: `repo_state.py`; never ask for what is already done.
 - After the push, watch CI in the background (skill `ci-monitor`, sub-agent `ci-watcher`); heal red runs on the feature branch.
 - Declare the delivery channel when the project has more than one (e.g. OTA / build / server).
 - Replace the handoff file (`HANDOFF-TEMPLATE.md`), update plan checkboxes, changelog if user-visible.

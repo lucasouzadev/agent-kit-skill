@@ -15,6 +15,9 @@ Codex, Cursor and other tools read `AGENTS.md` but run no hooks, output styles o
 | `SessionStart` prints the mandatory track | Walk `TRACK.md` stage by stage; open the skill each stage names (`.claude/skills/<name>/SKILL.md`) before the stage |
 | `track-gate` (Stop): no evidence after edits → sent back | Never end a turn that changed files without PASS / FAIL / BLOCKED / NOT RUN / N/A per gate |
 | `fixer-lite` / `ci-watcher` sub-agents on a light model | Do the `self-heal` loop yourself; after a push run `python3 .claude/agent-kit/ci_watch.py --wait` (or check the PR checks) and heal red runs on the feature branch |
+| `track-gate`: PR/branch suggestion without a state check → sent back | Before suggesting to open/merge/close a PR or create/delete a branch: `python3 .claude/agent-kit/repo_state.py` (or `git fetch` + the PR list) in the same turn |
+| `track-gate`: prose decision → sent back to use AskUserQuestion | Tools without an ask tool: put every decision at the end of the reply as a numbered list, recommendation first, so nothing is buried |
+| `run.sh` / `e2e_preflight.py` | Before any build or E2E run: `python3 .claude/agent-kit/e2e_preflight.py`; follow skill `e2e-flow` |
 | `verify.py` + metrics | Optional: `python3 .claude/agent-kit/verify.py` before trusting `.claude/` hooks from a PR; `metrics.py report` for the weekly review |
 
 Cursor: the installer writes `.cursor/rules/agent-kit.mdc` (always applied) pointing here when `.cursor/` exists or `--cursor` is passed.

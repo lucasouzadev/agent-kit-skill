@@ -17,7 +17,7 @@ Not sure? It is **Stop**.
 
 ## 2. Heal loop (max 2 attempts per root cause)
 1. Capture the evidence: exact command, exit code, the **first** failing lines (not the whole log).
-2. Smallest fix that removes the cause. Environment playbook: [playbook.md](playbook.md).
+2. Smallest fix that removes the cause. Environment playbook: [playbook.md](playbook.md); builds and E2E: skill `e2e-flow` (classify selector / timing / state / data / env / app bug first).
 3. Re-run the same command. Green → run the canonical project checks once more (a heal must not break a neighbour).
 4. Second failure on the same cause → switch to skill `systematic-debug`; still red → Stop.
 5. Log it: one line in the final reply under **Self-healed** (`what failed → cause → fix → evidence`). Repeated heals of the same class → rework ledger.

@@ -13,7 +13,8 @@
     "ci-monitor",
     "incremental-implementation",
     "test-driven-development",
-    "guide-for-beginners"
+    "guide-for-beginners",
+    "e2e-flow"
   ],
   "standard": [
     "caveman",
@@ -43,7 +44,8 @@
     "code-review-and-quality",
     "git-workflow-and-versioning",
     "code-simplification",
-    "guide-for-beginners"
+    "guide-for-beginners",
+    "e2e-flow"
   ],
   "full": "*"
 }

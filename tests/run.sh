@@ -289,6 +289,50 @@ python3 "$KIT/scripts/install.py" "$AU" --audience nonsense >/dev/null 2>&1 && f
 [ -f "$AU/.claude/skills/guide-for-beginners/SKILL.md" ] || fail "guide-for-beginners not vendored"
 pass "welcome + audience (once, kinds, opt-out, no project writes, installer flag)"
 
+# repo-state gate, ask gate, repo_state.py, e2e preflight, maestro run.sh never empty
+tr2() { python3 - "$T/tr2.jsonl" "$@" <<'PYT'
+import json,sys
+out,tool,cmd,final=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4]
+L=[{"type":"user","message":{"role":"user","content":"e ai?"}}]
+if tool!="none": L.append({"type":"assistant","message":{"content":[{"type":"tool_use","name":tool,"input":{"command":cmd}}]}}); L.append({"type":"user","message":{"content":[{"type":"tool_result","content":"ok"}]}})
+L.append({"type":"assistant","message":{"content":[{"type":"text","text":final}]}})
+open(out,"w").write("\n".join(json.dumps(x) for x in L)+"\n")
+PYT
+}
+tr2 none "" "Pronto. Agora abra o PR da branch feature/x e faca o merge."; o="$(tg "$T/tr2.jsonl")"; [[ "$o" == *"repo_state.py"* ]] || fail "repo gate missed an unchecked PR suggestion: $o"
+tr2 Bash "python3 .claude/agent-kit/repo_state.py" "O PR #8 ja foi mergeado; falta abrir um PR novo para 2 commits."; [[ "$(tg "$T/tr2.jsonl")" != *"repo_state"* ]] || fail "repo gate blocked a checked reply"
+tr2 mcp__github__list_pull_requests "" "Open a PR for the remaining commits."; [[ "$(tg "$T/tr2.jsonl")" != *"repo_state"* ]] || fail "repo gate must accept GitHub tool checks"
+tr2 none "" "Quer que eu abra o PR?"; o="$(tg "$T/tr2.jsonl")"; [[ "$o" == *"repo_state"* && "$o" == *"AskUserQuestion"* ]] || fail "both gates expected: $o"
+tr2 none "" "Duas opcoes:
+1. Refatorar agora
+2. Deixar para depois
+Qual voce prefere?"; [[ "$(tg "$T/tr2.jsonl")" == *"AskUserQuestion"* ]] || fail "ask gate missed prose options"
+tr2 AskUserQuestion "" "Perguntei acima."; [ -z "$(tg "$T/tr2.jsonl")" ] || fail "ask gate blocked after AskUserQuestion"
+tr2 none "" "Oi! Sou seu parceiro de codigo. O que voce quer construir hoje?"; [ -z "$(tg "$T/tr2.jsonl")" ] || fail "open question must not trigger the ask gate"
+tr2 none "" "Do you want me to continue?"; [ -z "$(AGENT_KIT_ASK_GATE=0 tg "$T/tr2.jsonl")" ] || fail "ask gate opt-out"
+RS="$T/rs"; mkdir -p "$RS" && ( cd "$RS" && git init -q -b main && git config user.email t@example.com && git config user.name t && echo a > a && git add a && git commit -qm base \
+  && git clone -q --bare . ../rs.git && git remote add origin ../rs.git && git fetch -q origin && git checkout -q -b feat && echo b > b && git add b && git commit -qm feat \
+  && git checkout -q main && echo c > c && git add c && git commit -qm other && git cherry-pick feat >/dev/null && git push -q origin main && git checkout -q feat )
+o="$(cd "$RS" && PATH="$B" "$B/python" "$KIT/assets/claude/repo_state.py" --no-fetch)"
+[[ "$o" == *"default: main"* && "$o" == *"already in main by patch: 1/1"* && "$o" == *"ALREADY merged"* && "$o" == *"gh not logged in"* ]] || fail "repo_state: $o"
+EP="$T/ep"; mkdir -p "$EP/.maestro/sub" "$EP/src" && git -C "$EP" init -q
+echo '{"expo":{"ios":{"bundleIdentifier":"com.acme.app"}}}' > "$EP/app.json"; echo '{}' > "$EP/package.json"; echo '{}' > "$EP/package-lock.json"
+echo 'export const B = () => <Button testID="login-button" />' > "$EP/src/a.tsx"
+printf 'appId: com.acme.app\n---\n- launchApp\n- tapOn:\n    id: "login-button"\n- runFlow: sub/login.yaml\n' > "$EP/.maestro/01.yaml"; printf 'appId: com.acme.app\n---\n- inputText: ${E2E_EMAIL}\n' > "$EP/.maestro/sub/login.yaml"
+o="$(cd "$EP" && python3 "$KIT/assets/claude/e2e_preflight.py")" || fail "preflight false alarm: $o"
+[[ "$o" == *"env E2E_EMAIL"* ]] || fail "preflight NEEDS: $o"
+printf 'appId: com.acme.wrong\n---\n- tapOn:\n    id: "ghost"\n- runFlow: sub/nope.yaml\n' > "$EP/.maestro/02.yaml"
+o="$(cd "$EP" && python3 "$KIT/assets/claude/e2e_preflight.py")" && fail "preflight passed a broken flow"
+[[ "$o" == *"FAIL  appId"* && "$o" == *"ghost"* && "$o" == *"sub/nope.yaml"* ]] || fail "preflight output: $o"
+MB="$T/fakemaestro"; mkdir -p "$MB"; printf '#!/usr/bin/env bash\necho "Flow not found or device offline"\nexit 1\n' > "$MB/maestro"; chmod +x "$MB/maestro"
+MR="$ROOT/skills/ci-device-lab/templates/maestro/run.sh"; rc=0
+o="$(cd "$T" && PATH="$MB:$PATH" RUNNER_TEMP="$T/mr" FLOWS="$T" PREFLIGHT=/nonexistent bash "$MR" android)" || rc=$?
+[ "$rc" = 3 ] && [[ "$o" == *"BLOCKED: no flow ran"* && "$o" == *"device offline"* ]] || fail "run.sh empty result ($rc): $o"
+o="$(cd "$T" && PATH="$MB:$PATH" RUNNER_TEMP="$T/mr2" FLOWS="$T" PREFLIGHT=/nonexistent LOG_TAIL=0 bash "$MR" android || true)"; [[ "$o" != *"device offline"* ]] || fail "LOG_TAIL=0 must hide logs (public repos)"
+o="$(printf '{"session_id":"s","prompt":"os testes falharam no maestro, ja mergeou o PR?"}' | bash "$A/intent-brief.sh")"; [[ "$o" == *"e2e_preflight.py"* && "$o" == *"repo_state.py"* ]] || fail "intent-brief hints: $o"
+[[ "$(printf '{"session_id":"s","prompt":"adiciona um build de tela nova"}' | bash "$A/intent-brief.sh")" != *"e2e-flow"* ]] || fail "e2e hint too broad"
+pass "repo + ask gates, repo_state, e2e preflight, maestro never empty, hints"
+
 # docs stay in sync with the skills folder
 for s in "$ROOT"/skills/*/; do n="$(basename "$s")"; [ "$n" = agent-kit ] && continue; grep -qE "\`(skills/)?$n\`" "$ROOT/README.md" || fail "README does not list skill $n"; done
 pass "README lists every skill"
@@ -299,6 +343,6 @@ pass "skills language-neutral"
 
 # personal-data guard: no e-mails or home paths in shipped files
 if grep -rInE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(com|net|org|io|dev|br)\b|/home/[a-z]+|/Users/[A-Za-z]+' \
-     --exclude-dir=.git --exclude=run.sh --exclude=CHANGELOG.md "$ROOT" | grep -vE 'noreply@|example\.com|@users\.noreply|git@github\.com'; then fail "personal data"; fi
+     --exclude-dir=.git --exclude=run.sh --exclude=CHANGELOG.md --exclude='OFL-*.txt' "$ROOT" | grep -vE 'noreply@|example\.com|@users\.noreply|git@github\.com'; then fail "personal data"; fi
 pass "no personal data"
 echo "ALL PASS"
