@@ -172,7 +172,7 @@ No `/commands`, no prompts. On the first message of a project the agent greets i
 - Canary: optional weak signal that the agent loaded the rules (a form of address used in every reply, never written to files).
 
 ## Brand
-Banner, social images (PT/EN), launch copy and the generator live in [`docs/brand/`](docs/brand/README.md).
+Banner and generator live in [`docs/brand/`](docs/brand/README.md).
 
 ## Contributing
 Run `bash tests/run.sh` before a PR (CI runs it too). See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). License: [MIT](LICENSE).
