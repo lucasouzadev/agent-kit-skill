@@ -7,7 +7,7 @@ Tudo aqui é texto limpo, sem assinatura de ferramenta. Copie e cole. Imagens em
 ## Repositório (GitHub → About)
 
 **Descrição (EN, 321 caracteres; o GitHub aceita até 350):**
-> Just talk, it codes. Open-source skills and hooks that make AI coding agents (Claude Code, Codex, Cursor) follow a real plan, fix their own small mistakes without asking, and watch your CI on a lighter model. 51 skills: spec, TDD, code review, security, performance, app cloning. No slash commands, no prompt engineering.
+> Just talk, it codes. Open-source skills and hooks that make AI coding agents (Claude Code, Codex, Cursor) follow a real plan, fix their own small mistakes without asking, and watch your CI on a lighter model. 52 skills: spec, TDD, code review, security, performance, app cloning. No slash commands, no prompt engineering.
 
 **Descrição curta alternativa (EN, 149):**
 > Just talk, it codes. Skills + hooks that make AI coding agents follow the plan, self-heal small errors and watch your CI. Claude Code, Codex, Cursor.
@@ -49,7 +49,7 @@ Criei o **Agent Kit**, um pacote open-source de skills e hooks para Claude Code,
 → **Fica de olho no seu CI.** Depois de cada push, um modelo mais leve acompanha o GitHub Actions em segundo plano e corrige o que quebrou.
 → **Sem comandos.** Na primeira mensagem ele se apresenta no seu idioma, faz uma pergunta e conduz o resto. Serve até para quem não programa.
 
-São 51 skills, incluindo spec, TDD, code review, segurança, performance e um pacote para recriar apps do zero.
+São 52 skills, incluindo spec, TDD, code review, segurança, performance e um pacote para recriar apps do zero.
 
 É grátis: github.com/lucasouzadev/agent-kit-skill
 
@@ -66,7 +66,7 @@ I built **Agent Kit**, an open-source pack of skills and hooks for Claude Code, 
 → **It keeps an eye on your CI.** After every push, a lighter model watches GitHub Actions in the background and fixes what broke.
 → **No commands.** On the first message it introduces itself in your language, asks one question and leads the rest. Works even if you don't code.
 
-51 skills, including spec, TDD, code review, security, performance and a pack to rebuild apps from scratch.
+52 skills, including spec, TDD, code review, security, performance and a pack to rebuild apps from scratch.
 
 Free: github.com/lucasouzadev/agent-kit-skill
 
@@ -82,7 +82,7 @@ Free: github.com/lucasouzadev/agent-kit-skill
 4/ Erro pequeno? Simulador travou, cache velho, teste quebrado. Ele resolve sozinho com um modelo mais leve, sem te perguntar nada.
 5/ Depois do push, outro agente leve acompanha o GitHub Actions em segundo plano e corrige o que quebrou na branch.
 6/ E sem comandos: na primeira mensagem ele se apresenta no seu idioma e faz uma pergunta. Você só conversa.
-7/ 51 skills, grátis, para Claude Code, Codex e Cursor → github.com/lucasouzadev/agent-kit-skill
+7/ 52 skills, grátis, para Claude Code, Codex e Cursor → github.com/lucasouzadev/agent-kit-skill
 
 ## Thread — X / Threads (EN)
 
@@ -92,7 +92,7 @@ Free: github.com/lucasouzadev/agent-kit-skill
 4/ Small error? Crashed simulator, stale cache, broken test. It fixes it with a lighter model, no questions asked.
 5/ After the push, another light agent watches GitHub Actions in the background and fixes what broke on the branch.
 6/ And no commands: on the first message it introduces itself in your language and asks one question. You just talk.
-7/ 51 skills, free, for Claude Code, Codex and Cursor → github.com/lucasouzadev/agent-kit-skill
+7/ 52 skills, free, for Claude Code, Codex and Cursor → github.com/lucasouzadev/agent-kit-skill
 
 ---
 

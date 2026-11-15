@@ -31,6 +31,8 @@ cat <<'TRACK'
   → 3 Owner "yes" (record it) → 4 Build in slices, test first → 5 Self-heal small in-scope failures WITHOUT asking (skill self-heal, sub-agent fixer-lite)
   → 6 Verify/G2 (evidence states) → 7 Push feature branch + watch CI in background (skill ci-monitor, sub-agent ci-watcher) → 8 Close (handoff, test list).
   Load the named skill before each stage (Skill tool). AGENTS.md overrides any skill. Detail: docs/agents/standard/TRACK.md
+  Before suggesting any PR/merge/branch action: python3 .claude/agent-kit/repo_state.py (never ask for what is already done).
+  Owner decisions: AskUserQuestion tool, never options in prose. Builds/E2E/Maestro: skill e2e-flow, e2e_preflight.py first.
 TRACK
 [ "$event" = startup ] && [ -f "$here/welcome.sh" ] && bash "$here/welcome.sh"
 [ "$event" = startup ] && echo "[agent-kit] Canary: use the form of address the owner gives in this session; if none yet, ask once (skip this for a person who writes in everyday words: do not mention it)."

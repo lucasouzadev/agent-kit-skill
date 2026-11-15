@@ -59,7 +59,7 @@ github.com/lucasouzadev/agent-kit-skill
 4/ Small error? Crashed simulator, stale cache, broken test. It fixes it with a lighter model, no questions asked.
 5/ After the push, another light agent watches GitHub Actions in the background and fixes what broke.
 6/ And no commands: on the first message it introduces itself in your language and asks one question. You just talk.
-7/ 51 skills, free → github.com/lucasouzadev/agent-kit-skill
+7/ 52 skills, free → github.com/lucasouzadev/agent-kit-skill
 
 ---
 
@@ -74,7 +74,7 @@ I built Agent Kit, an open-source pack of skills and hooks for Claude Code, Code
 → It keeps an eye on your CI. After every push, a lighter model watches GitHub Actions in the background and fixes what broke.
 → No commands. On the first message it introduces itself in your language, asks one question and leads the rest. Works even if you don't code.
 
-51 skills, including spec, TDD, code review, security, performance and a pack to rebuild apps from scratch.
+52 skills, including spec, TDD, code review, security, performance and a pack to rebuild apps from scratch.
 
 Free: github.com/lucasouzadev/agent-kit-skill
 

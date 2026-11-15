@@ -4,14 +4,14 @@ Why: agents skip rules they only "read about". The track is short, numbered and 
 
 | # | Stage | Do | Required skill(s) | Exit criterion |
 |---|---|---|---|---|
-| 0 | **Boot** | Read `AGENTS.md` + handoff; `git fetch`; check branch/PR | `session-guide` | You can state where things stopped |
+| 0 | **Boot** | Read `AGENTS.md` + handoff; `repo_state.py` (branches, PRs, merges as they really are) | `session-guide` | You can state where things stopped |
 | 1 | **Brief** | Compile the owner message (goal, acceptance, constraints, mode) | `intent-compiler` (+ `triage` for lists, `media-investigation` for media) | Goal + acceptance in one line |
 | 2 | **Plan** | Surface, risks, tests designed first (QUALITY-G1) | `session-preflight`; feature: `spec-driven-development`, `planning-and-task-breakdown`; bug: `systematic-debug` | Plan shown to the owner |
-| 3 | **Approve** | Wait for an explicit "yes"; record it in the handoff | — | Approval recorded (date + what) |
-| 4 | **Build** | Thin slices, test first, canonical checks after each slice | `incremental-implementation`, `test-driven-development` | Slice green |
+| 3 | **Approve** | Ask with the AskUserQuestion tool; record the "yes" in the handoff | — | Approval recorded (date + what) |
+| 4 | **Build** | Thin slices, test first, canonical checks after each slice; app builds / E2E / Maestro follow `e2e-flow` (preflight first) | `incremental-implementation`, `test-driven-development`, `e2e-flow` | Slice green |
 | 5 | **Self-heal** | Small defects inside the approved scope are fixed **without stopping or asking** (lighter model when available) | `self-heal` | Green, or a stop condition reported |
 | 6 | **Verify** | Self-review the diff; real checks; QUALITY-G2 states | `code-review-and-quality`, `pr-quality` | Every gate PASS / FAIL / BLOCKED / NOT RUN / N/A + evidence |
-| 7 | **Ship & watch** | Push the feature branch; watch CI in the background (lighter model); self-heal red runs | `ci-monitor`, `git-workflow-and-versioning` | CI green, or FAIL with cause and next step |
+| 7 | **Ship & watch** | `repo_state.py` again; push the feature branch; watch CI in the background (lighter model); self-heal red runs | `ci-monitor`, `git-workflow-and-versioning` | CI green, or FAIL with cause and next step |
 | 8 | **Close** | Reply (caveman), AUTOMATED vs PHYSICAL test list, replace the handoff | `handoff` | Handoff replaced |
 
 ## Rules
@@ -19,7 +19,10 @@ Why: agents skip rules they only "read about". The track is short, numbered and 
 2. **Order matters.** No edit before stage 3, except inside the self-heal envelope of an already-approved task.
 3. **A turn that changed files ends with evidence states.** In Claude Code the `track-gate` Stop hook sends the agent back once if the final reply has none.
 4. **Skills are invoked, not remembered.** When a stage names a skill, load it (Claude Code: the `Skill` tool) before doing the stage. A skill not installed in this profile: do the stage from this table and say so in one line.
-5. **Precedence.** `AGENTS.md` > this track > any skill (including imported ones). If a skill says "commit", "deploy" or "ask the user", the approval gate and self-heal envelope here still decide.
+5. **Check before you suggest.** Never suggest opening, merging or closing a PR, or creating, deleting or rebasing a branch, before checking the real state in the same turn (`python3 .claude/agent-kit/repo_state.py`, or git fetch + `gh pr list` / GitHub tools). Already merged, already open or already deleted → say so; never ask the owner to do what is done. The `track-gate` hook sends the agent back when it skips this.
+6. **Decisions go through Ask.** Anything the owner must decide (approval, a choice between options, a yes/no) is asked with the AskUserQuestion tool: 1–4 questions, 2–4 options each, recommendation first, self-contained wording. Nothing stays buried in prose; the `track-gate` hook sends the agent back when a reply ends with a prose decision. Open questions without options may stay as text.
+7. **Builds and E2E run through `e2e-flow`:** repo state → `e2e_preflight.py` (FAILs fixed first) → every requirement stated at once → build once → smoke → suite → read artifacts before any re-run → classify → heal → codify → report (never empty).
+8. **Precedence.** `AGENTS.md` > this track > any skill (including imported ones). If a skill says "commit", "deploy" or "ask the user", the approval gate and self-heal envelope here still decide.
 
 ## Self-heal envelope (stage 5 and 7) — act, do not ask
 Inside an approved task, fix on your own and report afterwards:

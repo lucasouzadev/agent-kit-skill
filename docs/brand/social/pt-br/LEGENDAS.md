@@ -59,7 +59,7 @@ github.com/lucasouzadev/agent-kit-skill
 4/ Erro pequeno? Simulador travou, cache velho, teste quebrado. Ele resolve sozinho com um modelo mais leve, sem te perguntar.
 5/ Depois do push, outro agente leve acompanha o GitHub Actions em segundo plano e corrige o que quebrou.
 6/ E sem comandos: na primeira mensagem ele se apresenta no seu idioma e faz uma pergunta. Você só conversa.
-7/ 51 skills, grátis → github.com/lucasouzadev/agent-kit-skill
+7/ 52 skills, grátis → github.com/lucasouzadev/agent-kit-skill
 
 ---
 
@@ -74,7 +74,7 @@ Criei o Agent Kit, um pacote open-source de skills e hooks para Claude Code, Cod
 → Fica de olho no seu CI. Depois de cada push, um modelo mais leve acompanha o GitHub Actions em segundo plano e corrige o que quebrou.
 → Sem comandos. Na primeira mensagem ele se apresenta no seu idioma, faz uma pergunta e conduz o resto. Serve até para quem não programa.
 
-São 51 skills, incluindo spec, TDD, code review, segurança, performance e um pacote para recriar apps do zero.
+São 52 skills, incluindo spec, TDD, code review, segurança, performance e um pacote para recriar apps do zero.
 
 É grátis: github.com/lucasouzadev/agent-kit-skill
 
