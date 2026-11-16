@@ -18,7 +18,7 @@ Why: many people have one computer and one phone (or none of the right kind). Ho
 2. **Pick capabilities** and copy only those templates from `templates/` (table in [recipes.md](recipes.md)): Android debug APK · iOS simulator build · E2E Android · E2E iOS · Expo OTA · Expo/EAS build (cloud or `--local`) · bare Gradle/Xcode build · TestFlight · deploy jobs.
 3. **List the secrets by name only** ([secrets.md](secrets.md)): what each is for, where the owner gets it, how to encode it. The owner pastes values **in GitHub → Settings → Secrets and variables → Actions**, never in the chat. If a value appears in the chat anyway: do not repeat it, tell the owner to rotate it.
 4. **Harden the repo** (architecture.md §Hardening) before the first secret is added.
-5. **First run small:** `workflow_dispatch` with the smoke flow only; read the job summary and failing screenshot; fix selectors; then widen. Expect selector tuning on the first real Maestro run.
+5. **Preflight, then first run small** (skill `e2e-flow`): `python3 .claude/agent-kit/e2e_preflight.py --flows maestro/flows` must show no FAIL; `workflow_dispatch` with the smoke flow only; read the job summary and failing screenshot; fix selectors; then widen. Expect selector tuning on the first real Maestro run.
 6. Record the workflows, inputs and secret names (never values) in the project's `AGENTS.md` / runbook.
 
 ## Non-negotiables

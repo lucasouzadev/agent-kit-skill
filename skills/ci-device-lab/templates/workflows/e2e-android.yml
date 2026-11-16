@@ -34,6 +34,7 @@ jobs:
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
           FLOWS: ${{ inputs.flows }}
           APP_ID: ${{ vars.APP_ID }}
+          LOG_TAIL: "0"          # public repo: logs are public, keep 0; private repo: 15
         with:
           api-level: ${{ inputs.api_level }}
           arch: x86_64

@@ -5,9 +5,9 @@
 <p align="center">
   <a href="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lucasouzadev/agent-kit-skill/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-1.11.0-orange.svg"></a>
+  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-1.12.0-orange.svg"></a>
   <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-d97757.svg">
-  <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-51-6b5bff.svg">
+  <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-52-6b5bff.svg">
   <img alt="Works with AGENTS.md" src="https://img.shields.io/badge/AGENTS.md-compatible-2ea44f.svg">
   <img alt="Codex · Cursor" src="https://img.shields.io/badge/Codex%20%C2%B7%20Cursor-supported-555.svg">
 </p>
@@ -52,7 +52,7 @@ Full text: [`TRACK.md`](skills/agent-kit/standard/TRACK.md). `AGENTS.md` overrid
 | `SessionStart` hook | `session-context.sh` | Prints branch, commits, handoff **and the track** on startup, resume and after every compaction |
 | `UserPromptSubmit` hook | `intent-brief.sh` | Detects the mode (en/pt/es) and names the **skills to load before acting** (only those installed) |
 | `PreToolUse` hooks | `action-guard.sh`, `pr-gate.sh` | Asks before pushes to main, deploys, store builds, destructive SQL, secret reads; blocks PRs whose body fails the quality check |
-| `Stop` hook | `track-gate.sh` | A turn that changed files and ends **without evidence states** is sent back once to verify, self-heal and report (never loops) |
+| `Stop` hook | `track-gate.sh` | Sends the turn back once (never loops) when it changed files without **evidence states**, suggested a **PR/branch/merge action without checking the repository** (`repo_state.py`), or ended with a **decision in prose instead of AskUserQuestion** |
 | Sub-agents | `fixer-lite`, `ci-watcher` (`model: haiku`) | Mechanical heals and CI watching run on a light model, in the background |
 | Other tools | `NO-HOOKS.md`, Cursor rule | The same duties, done by hand |
 
@@ -89,6 +89,7 @@ Use **either** the plugin hooks or the vendored hooks in a repo, not both. Optio
 |---|---|
 | `skills/agent-kit/` | setup skill: `templates/`, `standard/` docs, `assets/claude/` (settings, hooks, statusline), `scripts/install.py` |
 | `skills/self-heal` | fix small in-scope defects without stopping or asking; simulator/emulator/cache playbook; delegates to `fixer-lite` |
+| `skills/e2e-flow` | one flow for builds/E2E/Maestro: repo preflight (`e2e_preflight.py`), all requirements up front, smoke before suite, read artifacts before re-running, classify, codify the fix, never an empty result |
 | `skills/ci-monitor` | watch Actions runs after each push on a light model (`ci-watcher`), classify, heal the feature branch |
 | `skills/guide-for-beginners` | chat for people who do not code: automatic first-meeting welcome in the person's language, no commands or jargon, the agent decides the technical, asks the folder name for a new project |
 | `skills/session-guide` | conversation-led sessions: briefing, goal restatement, one question at a time |
@@ -137,7 +138,7 @@ Use **either** the plugin hooks or the vendored hooks in a repo, not both. Optio
 
 Both are in the `full` profile only (niche, large). Overlapping upstream skills are mapped to the kit's own (`systematic-debug`, `security-core`, `performance-core`, `session-guide`). Update with [`tools/sync_upstream_skills.py`](tools/sync_upstream_skills.py); notices in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-**Profiles** (`profiles.json`): `lite` (14 skills) for small projects · `standard` (28) for apps with real users · `full` (all 51, including the two packs above) when the project builds in CI. Fewer skills = fewer always-loaded tokens.
+**Profiles** (`profiles.json`): `lite` (15 skills) for small projects · `standard` (29) for apps with real users · `full` (all 52, including the two packs above) when the project builds in CI. Fewer skills = fewer always-loaded tokens.
 
 Also: `output-styles/caveman.md` (terse output style), `hooks/hooks.json` (plugin hooks), `agents/` (light-model sub-agents).
 

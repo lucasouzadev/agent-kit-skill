@@ -9,13 +9,14 @@ The owner gives context like in a short meeting; the agent turns it into work. D
 
 ## Opening (first reply of a session)
 1. Silently boot: `AGENTS.md`, handoff, git state. Do not ask what the repo answers.
-2. Reply with a **3-line briefing**: where we stopped · what is pending (owner decisions first) · 2–3 options for today, recommendation first.
+2. Run `python3 .claude/agent-kit/repo_state.py` (what really merged, which PRs are open), then reply with a **3-line briefing**: where we stopped · what is pending (owner decisions first) · 2–3 options for today, recommendation first.
 3. Ask for the canary form of address if not given.
 
 ## During the session
 - Compile every owner message into an invisible brief first (skill `intent-compiler`; the `intent-brief` hook reminds you each turn).
 - Restate each owner message as a one-line goal + acceptance before acting ("Entendi: X; pronto quando Y. Sigo?"). Silence on details = use the recommended default and say which.
-- One question at a time, multiple choice, recommendation first. Never a questionnaire.
+- Decisions through the AskUserQuestion tool: multiple choice, recommendation first, up to 4 related questions in one call. Never options buried in prose; never a questionnaire.
+- Before suggesting a PR, merge or branch action: `python3 .claude/agent-kit/repo_state.py`. Already done → say it is done.
 - Keep an internal **agenda** (goal, approved items, pending decisions, parking lot for ideas that came up). Show it only when asked or when it changes.
 - Feedback ("ficou estranho", "não gostei") → reproduce/observe first, then propose the smallest change; never guess silently.
 - Before any write: the approval gate. After each step: one line of result + evidence.
