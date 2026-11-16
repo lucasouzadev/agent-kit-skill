@@ -1,6 +1,5 @@
 // Agent Kit brand renderer: sky + procedural clouds + glossy app icon + pixel lettering.
-// Usage (repo root): node docs/brand/src/render.js  -> writes docs/assets/banner.png and social-preview.png only.
-// Campaign material (posts, captions) is not kept in this repository.
+// Usage (repo root): node docs/brand/src/render.js        -> writes docs/brand/** and docs/assets/banner.png
 // Needs Playwright with Chromium. Fonts are local (OFL), clouds are generated (feTurbulence) per seed.
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -166,6 +165,28 @@ const COPY = {
   const out = (rel) => { const p = path.join(ROOT, rel); fs.mkdirSync(path.dirname(p), { recursive: true }); return p; };
   jobs.push({ file: 'docs/assets/banner.png', w: 1280, h: 640, seed: 7, wide: true, body: hero(COPY.en) });
   jobs.push({ file: 'docs/assets/social-preview.png', w: 1280, h: 640, seed: 7, wide: true, body: hero(COPY.en) });
+  // One package per language, one folder per network, only the sizes each network uses.
+  const PKG = { pt: { dir: 'pt-br', ig: 'instagram', feed: 'feed-carrossel-1080x1350', stories: 'stories-1080x1920', li: 'linkedin',
+                      liPost: 'post-1200x1200', liCover: 'capa-perfil-1584x396.jpg', liLink: 'imagem-link-1200x627.jpg', th: 'threads', thPost: 'post-carrossel-1080x1350', pdf: 'carrossel-documento-1080x1350.pdf', avatar: 'foto-perfil-1080x1080.jpg' },
+                en: { dir: 'en', ig: 'instagram', feed: 'feed-carousel-1080x1350', stories: 'stories-1080x1920', li: 'linkedin',
+                      liPost: 'post-1200x1200', liCover: 'profile-cover-1584x396.jpg', liLink: 'link-image-1200x627.jpg', th: 'threads', thPost: 'post-carousel-1080x1350', pdf: 'carousel-document-1080x1350.pdf', avatar: 'profile-photo-1080x1080.jpg' } };
+  const pdfs = [];
+  for (const lang of ['pt', 'en']) {
+    const c = COPY[lang], k = PKG[lang], base = `docs/brand/social/${k.dir}`;
+    const feed = [];
+    c.posts.forEach((p, i) => {
+      const n = `${p.id}.jpg`;
+      feed.push(`${base}/${k.ig}/${k.feed}/${n}`);
+      jobs.push({ file: `${base}/${k.ig}/${k.feed}/${n}`, w: 1080, h: 1350, seed: 31 + i, body: post(p) });
+      jobs.push({ file: `${base}/${k.ig}/${k.stories}/${n}`, w: 1080, h: 1920, seed: 71 + i, stickerUp: 300, body: story(p) });
+      jobs.push({ file: `${base}/${k.th}/${k.thPost}/${n}`, w: 1080, h: 1350, seed: 31 + i, body: post(p) });
+      jobs.push({ file: `${base}/${k.li}/${k.liPost}/${n}`, w: 1200, h: 1200, seed: 11 + i, body: post(p) });
+    });
+    jobs.push({ file: `${base}/${k.ig}/${k.avatar}`, w: 1080, h: 1080, seed: 91, noSticker: true, body: avatar() });
+    jobs.push({ file: `${base}/${k.li}/${k.liCover}`, w: 1584, h: 396, seed: 51, wide: true, body: hero({ ...c, steps: null, right: true }) });
+    jobs.push({ file: `${base}/${k.li}/${k.liLink}`, w: 1200, h: 627, seed: 61, wide: true, body: hero(c) });
+    pdfs.push({ out: `${base}/${k.li}/${k.pdf}`, pages: feed });
+  }
   for (const j of jobs) {
     const pg = await browser.newPage({ viewport: { width: j.w, height: j.h }, deviceScaleFactor: 1 });
     await pg.setContent(page(j), { waitUntil: 'load' });
@@ -175,4 +196,11 @@ const COPY = {
     console.log('wrote', j.file);
   }
   await browser.close();
+  // LinkedIn carousels are uploaded as a PDF document: one page per feed image.
+  const { execFileSync } = require('child_process');
+  for (const d of pdfs) {
+    execFileSync('python3', ['-c', 'import sys\nfrom PIL import Image\nims=[Image.open(p).convert("RGB") for p in sys.argv[2:]]\nims[0].save(sys.argv[1],save_all=True,append_images=ims[1:],resolution=144)',
+      out(d.out), ...d.pages.map((p) => path.join(ROOT, p))]);
+    console.log('wrote', d.out);
+  }
 })();
